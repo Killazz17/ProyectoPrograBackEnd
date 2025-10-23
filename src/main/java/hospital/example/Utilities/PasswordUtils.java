@@ -1,4 +1,4 @@
-package hospital.Utilities;
+package hospital.example.Utilities;
 
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;

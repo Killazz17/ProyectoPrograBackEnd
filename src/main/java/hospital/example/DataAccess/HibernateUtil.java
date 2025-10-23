@@ -1,4 +1,4 @@
-package hospital.DataAccess;
+package hospital.example.DataAccess;
 
 
 import org.hibernate.SessionFactory;
