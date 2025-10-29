@@ -1,12 +1,12 @@
 package hospital.example.Domain.models;
 
-import hospital.example.Utilities.Rol;
 import jakarta.persistence.*;
+import hospital.example.Utilities.Rol;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "admins")
-public class Admin extends Usuario {
+@Table(name = "farmaceutas")
+public class Farmaceuta extends Usuario {
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -14,11 +14,11 @@ public class Admin extends Usuario {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    public Admin() {
+    public Farmaceuta() {
         super();
     }
 
-    public Admin(int id, String clave, String nombre, Rol rol) {
+    public Farmaceuta(int id, String clave, String nombre, Rol rol) {
         super(id, clave, nombre, rol);
     }
 
@@ -55,7 +55,7 @@ public class Admin extends Usuario {
 
     @Override
     public String toString() {
-        return "Admin{" +
+        return "Farmaceuta{" +
                 "id=" + getId() +
                 ", nombre='" + getNombre() + '\'' +
                 ", rol=" + getRol() +

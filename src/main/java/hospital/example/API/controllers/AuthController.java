@@ -6,7 +6,7 @@ import hospital.example.Domain.dtos.ResponseDto;
 import hospital.example.Domain.dtos.auth.LoginRequestDto;
 import hospital.example.Domain.dtos.auth.RegisterRequestDto;
 import hospital.example.Domain.dtos.auth.UserResponseDto;
-import hospital.example.Domain.models.User;
+import hospital.example.Domain.models.Usuario;
 import hospital.example.DataAccess.services.AuthService;
 
 public class AuthController {
@@ -57,7 +57,7 @@ public class AuthController {
     private ResponseDto handleRegister(RequestDto request) {
         try {
             RegisterRequestDto regDto = gson.fromJson(request.getData(), RegisterRequestDto.class);
-            User user = authService.register(regDto.getUsername(), regDto.getEmail(), regDto.getPassword(), regDto.getRole());
+            Usuario user = authService.register(regDto.getUsername(), regDto.getEmail(), regDto.getPassword(), regDto.getRole());
 
             UserResponseDto userDto = new UserResponseDto(
                   //user.getId()
@@ -83,7 +83,7 @@ public class AuthController {
     // --- HELPER: GET USER BY USERNAME ---
     public UserResponseDto getUserByUsername(String username) {
         try {
-            User user = authService.getUserByUsername(username);
+            Usuario user = authService.getUserByUsername(username);
             if (user == null) return null;
 
             return new UserResponseDto(

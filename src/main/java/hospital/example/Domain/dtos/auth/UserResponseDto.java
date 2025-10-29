@@ -1,7 +1,5 @@
 package hospital.example.Domain.dtos.auth;
 
-import java.time.LocalDateTime;
-
 public class UserResponseDto {
     private Long id;
     private String username;

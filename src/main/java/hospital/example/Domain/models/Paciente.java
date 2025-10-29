@@ -1,12 +1,20 @@
 package hospital.example.Domain.models;
 
-import hospital.example.Utilities.Rol;
 import jakarta.persistence.*;
+import hospital.example.Utilities.Rol;
+
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "admins")
-public class Admin extends Usuario {
+@Table(name = "pacientes")
+public class Paciente extends Usuario {
+
+    @Column(name = "fecha_nacimiento", nullable = false)
+    private LocalDate fechaDeNacimiento;
+
+    @Column(name = "numero_telefono", nullable = false, length = 20)
+    private String numeroTelefono;
 
     @Column(name = "created_at", updatable = false)
     private LocalDateTime createdAt;
@@ -14,12 +22,14 @@ public class Admin extends Usuario {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt;
 
-    public Admin() {
+    public Paciente() {
         super();
     }
 
-    public Admin(int id, String clave, String nombre, Rol rol) {
+    public Paciente(int id, String clave, String nombre, Rol rol, LocalDate fechaDeNacimiento, String numeroTelefono) {
         super(id, clave, nombre, rol);
+        this.fechaDeNacimiento = fechaDeNacimiento;
+        this.numeroTelefono = numeroTelefono;
     }
 
     @PrePersist
@@ -36,6 +46,22 @@ public class Admin extends Usuario {
     // -----------------
     // Getters & Setters
     // -----------------
+
+    public LocalDate getFechaDeNacimiento() {
+        return fechaDeNacimiento;
+    }
+
+    public void setFechaDeNacimiento(LocalDate fechaDeNacimiento) {
+        this.fechaDeNacimiento = fechaDeNacimiento;
+    }
+
+    public String getNumeroTelefono() {
+        return numeroTelefono;
+    }
+
+    public void setNumeroTelefono(String numeroTelefono) {
+        this.numeroTelefono = numeroTelefono;
+    }
 
     public LocalDateTime getCreatedAt() {
         return createdAt;
@@ -55,9 +81,11 @@ public class Admin extends Usuario {
 
     @Override
     public String toString() {
-        return "Admin{" +
+        return "Paciente{" +
                 "id=" + getId() +
                 ", nombre='" + getNombre() + '\'' +
+                ", fechaNacimiento=" + fechaDeNacimiento +
+                ", numeroTelefono='" + numeroTelefono + '\'' +
                 ", rol=" + getRol() +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
