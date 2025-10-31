@@ -27,6 +27,14 @@ El código tenía errores de configuración que causaban que las entidades JPA n
   - Antes: `@Table(name = "medicamentos")`
   - Después: `@Table(name = "medicamento")`
 
+### 4. Inicialización de Datos (Main.java)
+- **Líneas 50-82**: Agregado asignación manual de IDs para todos los usuarios
+  - Los usuarios necesitan IDs asignados manualmente porque la entidad Usuario no tiene `@GeneratedValue`
+  - Admins: IDs 1-5
+  - Farmaceutas: IDs 6-10
+  - Médicos: IDs 11-15
+  - Pacientes: IDs 16-20
+
 ## Estado Actual
 ✅ El código compila sin errores  
 ✅ Las anotaciones JPA coinciden con el esquema SQL  
