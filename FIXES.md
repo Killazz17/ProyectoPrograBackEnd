@@ -35,6 +35,13 @@ El código tenía errores de configuración que causaban que las entidades JPA n
   - Médicos: IDs 11-15
   - Pacientes: IDs 16-20
 
+- **Líneas 50-83**: Agregado asignación de roles para todos los usuarios
+  - Cada usuario requiere un `rol` asignado (campo NOT NULL en la base de datos)
+  - Admins: `Rol.ADMINISTRADOR`
+  - Farmaceutas: `Rol.FARMACEUTA`
+  - Médicos: `Rol.MEDICO`
+  - Pacientes: `Rol.PACIENTE`
+
 ## Estado Actual
 ✅ El código compila sin errores  
 ✅ Las anotaciones JPA coinciden con el esquema SQL  
