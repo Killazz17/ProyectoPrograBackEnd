@@ -1,13 +1,13 @@
-package hospital.example.Domain.dtos.auth;
+package hospital.example.Domain.dtos.Usuario;
 
-public class UserResponseDto {
+public class UsuarioResponseDto {
     private int id;
     private String nombre;
     private String rol;
 
-    public UserResponseDto() {}
+    public UsuarioResponseDto() {}
 
-    public UserResponseDto(int id, String nombre, String rol) {
+    public UsuarioResponseDto(int id, String nombre, String rol) {
         this.id = id;
         this.nombre = nombre;
         this.rol = rol;

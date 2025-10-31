@@ -1,11 +1,11 @@
 package hospital.example.DataAccess;
 
-
+import hospital.example.Domain.models.*;
 import org.hibernate.SessionFactory;
 import org.hibernate.cfg.Configuration;
+
 import java.io.IOException;
 import java.util.Properties;
-
 
 public class HibernateUtil {
 
@@ -19,7 +19,15 @@ public class HibernateUtil {
             sessionFactory = new Configuration()
                     .setProperties(properties)
 
-                    // Agregar aqui otras entidades.
+                    .addAnnotatedClass(Usuario.class)
+                    .addAnnotatedClass(Admin.class)
+                    .addAnnotatedClass(Paciente.class)
+                    .addAnnotatedClass(Medico.class)
+                    .addAnnotatedClass(Farmaceuta.class)
+                    .addAnnotatedClass(Medicamento.class)
+                    .addAnnotatedClass(MedicamentoPrescrito.class)
+                    .addAnnotatedClass(Receta.class)
+
                     .buildSessionFactory();
 
         } catch (IOException e) {

@@ -1,29 +1,29 @@
 package hospital.example.Domain.dtos.auth;
 
 public class LoginRequestDto {
-    private String usernameOrEmail;
-    private String password;
+    private int id;
+    private String clave;
 
     public LoginRequestDto() {}
 
-    public LoginRequestDto(String usernameOrEmail, String password) {
-        this.usernameOrEmail = usernameOrEmail;
-        this.password = password;
+    public LoginRequestDto(int id, String clave) {
+        this.id = id;
+        this.clave = clave;
     }
 
-    public String getUsernameOrEmail() {
-        return usernameOrEmail;
+    public int getId() {
+        return id;
     }
 
-    public void setUsernameOrEmail(String usernameOrEmail) {
-        this.usernameOrEmail = usernameOrEmail;
+    public void setId(int id) {
+        this.id = id;
     }
 
-    public String getPassword() {
-        return password;
+    public String getClave() {
+        return clave;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public void setClave(String clave) {
+        this.clave = clave;
     }
 }

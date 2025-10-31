@@ -1,5 +1,7 @@
 package hospital.example.Server;
 
+import hospital.example.API.controllers.*;
+
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
@@ -9,29 +11,51 @@ import java.util.concurrent.CopyOnWriteArrayList;
 public class SocketServer {
 
     private final int port;
+
+    // Controladores
     private final AuthController authController;
-    private final CarController carController;
+    private final UsuarioController usuarioController;
+    private final PacienteController pacienteController;
+    private final MedicoController medicoController;
+    private final FarmaceutaController farmaceutaController;
+    private final AdminController adminController;
+    private final MedicamentoController medicamentoController;
+    private final RecetaController recetaController;
+
     private ServerSocket serverSocket;
     private final List<ClientHandler> activeClients = new CopyOnWriteArrayList<>();
     private MessageBroadcaster messageBroadcaster;
 
-    public SocketServer(int port, AuthController authController, CarController carController) {
+    public SocketServer(int port,
+                        AuthController authController,
+                        UsuarioController usuarioController,
+                        PacienteController pacienteController,
+                        MedicoController medicoController,
+                        FarmaceutaController farmaceutaController,
+                        AdminController adminController,
+                        MedicamentoController medicamentoController,
+                        RecetaController recetaController) {
+
         this.port = port;
         this.authController = authController;
-        this.carController = carController;
+        this.usuarioController = usuarioController;
+        this.pacienteController = pacienteController;
+        this.medicoController = medicoController;
+        this.farmaceutaController = farmaceutaController;
+        this.adminController = adminController;
+        this.medicamentoController = medicamentoController;
+        this.recetaController = recetaController;
     }
 
     public void start() {
         try {
             serverSocket = new ServerSocket(port);
-            System.out.println("[SocketServer] Started on port " + port);
+            System.out.println("[SocketServer] Escuchando en puerto " + port);
 
-            // Move accept loop to separate thread so main thread isn't blocked
             new Thread(this::acceptConnections, "SocketServer-Acceptor").start();
 
         } catch (IOException e) {
-            System.err.println("[SocketServer] Failed to start: " + e.getMessage());
-            e.printStackTrace();
+            System.err.println("[SocketServer] Error al iniciar: " + e.getMessage());
         }
     }
 
@@ -39,30 +63,38 @@ public class SocketServer {
         try {
             while (!serverSocket.isClosed()) {
                 Socket clientSocket = serverSocket.accept();
-                System.out.println("[SocketServer] New client connected from " + clientSocket.getInetAddress());
+                System.out.println("[SocketServer] Nuevo cliente: " + clientSocket.getInetAddress());
 
-                // Track this client
-                ClientHandler handler = new ClientHandler(clientSocket, authController, carController, this);
+                ClientHandler handler = new ClientHandler(
+                        clientSocket,
+                        authController,
+                        usuarioController,
+                        pacienteController,
+                        medicoController,
+                        farmaceutaController,
+                        adminController,
+                        medicamentoController,
+                        recetaController,
+                        this
+                );
+
                 activeClients.add(handler);
-
-                // Give it a descriptive thread name
-                Thread clientThread = new Thread(handler, "ClientHandler-" + activeClients.size());
-                clientThread.start();
+                new Thread(handler, "ClientHandler-" + activeClients.size()).start();
             }
+
         } catch (IOException e) {
-            System.err.println("[SocketServer] Error in accept loop: " + e.getMessage());
+            System.err.println("[SocketServer] Error en conexión: " + e.getMessage());
         }
     }
 
     public void removeClient(ClientHandler handler) {
         activeClients.remove(handler);
-        System.out.println("[SocketServer] Client removed. Active clients: " + activeClients.size());
+        System.out.println("[SocketServer] Cliente removido. Activos: " + activeClients.size());
     }
 
     public void broadcast(Object message) {
-        System.out.println("[SocketServer] Broadcasting to " + activeClients.size() + " clients: " + message);
+        System.out.println("[SocketServer] Enviando a " + activeClients.size() + " clientes: " + message);
 
-        // Broadcast to all connected message clients
         if (messageBroadcaster != null) {
             messageBroadcaster.broadcastToAll(message);
         }
@@ -70,7 +102,7 @@ public class SocketServer {
 
     public void setMessageBroadcaster(MessageBroadcaster broadcaster) {
         this.messageBroadcaster = broadcaster;
-        System.out.println("[SocketServer] MessageBroadcaster registered");
+        System.out.println("[SocketServer] Broadcaster configurado");
     }
 
     public int getActiveClientCount() {
@@ -81,7 +113,7 @@ public class SocketServer {
         try {
             if (serverSocket != null && !serverSocket.isClosed()) {
                 serverSocket.close();
-                System.out.println("[SocketServer] Server stopped.");
+                System.out.println("[SocketServer] Servidor detenido.");
             }
         } catch (IOException e) {
             e.printStackTrace();
