@@ -52,7 +52,6 @@ public class Main {
                 admin.setId(i);
                 admin.setNombre("Admin" + i);
                 admin.setRol(Rol.ADMINISTRADOR);
-                adminService.save(admin);
                 authService.asignarClaveHasheada(admin, "admin" + i);
             }
 
@@ -62,7 +61,6 @@ public class Main {
                 f.setId(i + 5); // IDs 6-10
                 f.setNombre("Farmaceuta" + i);
                 f.setRol(Rol.FARMACEUTA);
-                farmaceutaService.save(f);
                 authService.asignarClaveHasheada(f, "farm" + i);
             }
 
@@ -73,7 +71,6 @@ public class Main {
                 m.setNombre("Medico" + i);
                 m.setEspecialidad("Cardiología");
                 m.setRol(Rol.MEDICO);
-                medicoService.save(m);
                 authService.asignarClaveHasheada(m, "med" + i);
             }
 
@@ -85,7 +82,6 @@ public class Main {
                 p.setFechaNacimiento(new Date());
                 p.setNumeroTelefono("8888-000" + i);
                 p.setRol(Rol.PACIENTE);
-                pacienteService.save(p);
                 authService.asignarClaveHasheada(p, "pac" + i);
             }
 

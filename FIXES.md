@@ -42,6 +42,11 @@ El código tenía errores de configuración que causaban que las entidades JPA n
   - Médicos: `Rol.MEDICO`
   - Pacientes: `Rol.PACIENTE`
 
+- **Líneas 50-83**: Corregido orden de operaciones para guardar usuarios
+  - Removido llamadas redundantes a `save()` antes de `asignarClaveHasheada()`
+  - `asignarClaveHasheada()` ahora maneja el guardado completo del usuario con todos los campos requeridos
+  - Esto evita errores de "Column 'clave_hash' cannot be null"
+
 ## Estado Actual
 ✅ El código compila sin errores  
 ✅ Las anotaciones JPA coinciden con el esquema SQL  
