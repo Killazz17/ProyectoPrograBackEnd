@@ -3,22 +3,23 @@ package hospital.example.Domain.models;
 import jakarta.persistence.*;
 
 @Entity
-@DiscriminatorValue("MEDICAMENTO_PRESCRITO") // opcional, para diferenciar tipos
+@DiscriminatorValue("MEDICAMENTO_PRESCRITO")
 public class MedicamentoPrescrito extends Medicamento {
 
-    @Column(nullable = false)
+    @Column(name = "cantidad")
     private int cantidad;
 
-    @Column(nullable = false)
+    @Column(name = "duracion")
     private int duracion;
 
-    @Column(nullable = false, length = 300)
+    @Column(name = "indicaciones", length = 300)
     private String indicaciones;
 
-    @Column(name = "receta_id", nullable = false)
-    private int recetaId;
+    // No necesitas el campo receta_id aquí, se maneja por la relación en Receta
 
-    public MedicamentoPrescrito() {}
+    public MedicamentoPrescrito() {
+        super();
+    }
 
     public MedicamentoPrescrito(String codigo, String nombre, String presentacion,
                                 int cantidad, int duracion, String indicaciones) {
@@ -28,6 +29,7 @@ public class MedicamentoPrescrito extends Medicamento {
         this.indicaciones = indicaciones;
     }
 
+    // Getters y Setters
     public int getCantidad() {
         return cantidad;
     }

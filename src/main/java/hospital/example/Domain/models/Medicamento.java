@@ -5,12 +5,13 @@ import jakarta.persistence.*;
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "tipo", discriminatorType = DiscriminatorType.STRING)
+@DiscriminatorValue("MEDICAMENTO")
 @Table(name = "medicamentos")
 public class Medicamento {
 
     @Id
     @Column(name = "codigo", length = 20)
-    private String codigo; // Código único del medicamento
+    private String codigo;
 
     @Column(nullable = false, length = 100)
     private String nombre;
@@ -26,6 +27,7 @@ public class Medicamento {
         this.presentacion = presentacion;
     }
 
+    // Getters y Setters
     public String getCodigo() {
         return codigo;
     }

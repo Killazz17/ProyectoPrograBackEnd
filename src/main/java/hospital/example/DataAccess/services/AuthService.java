@@ -31,10 +31,31 @@ public class AuthService {
         String salt = genSalt();
         u.setSalt(salt);
         u.setClaveHash(hash(clave, salt));
-        try (Session s = sessionFactory.openSession()) {
-            Transaction tx = s.beginTransaction();
-            s.merge(u);
+
+        Session session = null;
+        Transaction tx = null;
+        try {
+            session = sessionFactory.openSession();
+            tx = session.beginTransaction();
+
+            // Usar merge en lugar de persist si el objeto ya existe
+            session.merge(u);
+
             tx.commit();
+        } catch (Exception e) {
+            if (tx != null && tx.isActive()) {
+                try {
+                    tx.rollback();
+                } catch (Exception ex) {
+                    System.err.println("[AuthService] Error en rollback: " + ex.getMessage());
+                }
+            }
+            System.err.println("[AuthService] Error al asignar clave: " + e.getMessage());
+            e.printStackTrace();
+        } finally {
+            if (session != null && session.isOpen()) {
+                session.close();
+            }
         }
     }
 

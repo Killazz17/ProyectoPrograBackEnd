@@ -1,9 +1,8 @@
 package hospital.example.Domain.models;
 
 import hospital.example.Utilities.Rol;
-import jakarta.persistence.Column;
-import jakarta.persistence.DiscriminatorValue;
-import jakarta.persistence.Entity;
+import jakarta.persistence.*;
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @Entity
@@ -16,6 +15,12 @@ public class Paciente extends Usuario {
     @Column(name = "numero_telefono", length = 20)
     private String numeroTelefono;
 
+    @Column(name = "created_at", updatable = false)
+    private LocalDateTime createdAt;
+
+    @Column(name = "updated_at")
+    private LocalDateTime updatedAt;
+
     public Paciente() {
         super();
     }
@@ -26,6 +31,18 @@ public class Paciente extends Usuario {
         this.numeroTelefono = numeroTelefono;
     }
 
+    @PrePersist
+    protected void onCreate() {
+        createdAt = LocalDateTime.now();
+        updatedAt = createdAt;
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        updatedAt = LocalDateTime.now();
+    }
+
+    // Getters y Setters
     public Date getFechaNacimiento() {
         return fechaNacimiento;
     }
@@ -40,5 +57,21 @@ public class Paciente extends Usuario {
 
     public void setNumeroTelefono(String numeroTelefono) {
         this.numeroTelefono = numeroTelefono;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
+
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
     }
 }
