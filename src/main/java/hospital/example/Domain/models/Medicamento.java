@@ -3,12 +3,14 @@ package hospital.example.Domain.models;
 import jakarta.persistence.*;
 
 @Entity
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "tipo", discriminatorType = DiscriminatorType.STRING)
 @Table(name = "medicamentos")
 public class Medicamento {
 
     @Id
     @Column(name = "codigo", length = 20)
-    private String codigo; // Código único del medicamento (PK)
+    private String codigo; // Código único del medicamento
 
     @Column(nullable = false, length = 100)
     private String nombre;
@@ -23,10 +25,6 @@ public class Medicamento {
         this.nombre = nombre;
         this.presentacion = presentacion;
     }
-
-    // -----------------
-    // Getters & Setters
-    // -----------------
 
     public String getCodigo() {
         return codigo;
@@ -50,14 +48,5 @@ public class Medicamento {
 
     public void setPresentacion(String presentacion) {
         this.presentacion = presentacion;
-    }
-
-    @Override
-    public String toString() {
-        return "Medicamento{" +
-                "codigo='" + codigo + '\'' +
-                ", nombre='" + nombre + '\'' +
-                ", presentacion='" + presentacion + '\'' +
-                '}';
     }
 }

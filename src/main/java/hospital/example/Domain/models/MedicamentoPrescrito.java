@@ -3,8 +3,7 @@ package hospital.example.Domain.models;
 import jakarta.persistence.*;
 
 @Entity
-@Table(name = "medicamentos_prescritos")
-@Inheritance(strategy = InheritanceType.JOINED)
+@DiscriminatorValue("MEDICAMENTO_PRESCRITO") // opcional, para diferenciar tipos
 public class MedicamentoPrescrito extends Medicamento {
 
     @Column(nullable = false)
@@ -16,11 +15,13 @@ public class MedicamentoPrescrito extends Medicamento {
     @Column(nullable = false, length = 300)
     private String indicaciones;
 
-    public MedicamentoPrescrito() {
-        // Constructor vacío
-    }
+    @Column(name = "receta_id", nullable = false)
+    private int recetaId;
 
-    public MedicamentoPrescrito(String codigo, String nombre, String presentacion, int cantidad, int duracion, String indicaciones) {
+    public MedicamentoPrescrito() {}
+
+    public MedicamentoPrescrito(String codigo, String nombre, String presentacion,
+                                int cantidad, int duracion, String indicaciones) {
         super(codigo, nombre, presentacion);
         this.cantidad = cantidad;
         this.duracion = duracion;

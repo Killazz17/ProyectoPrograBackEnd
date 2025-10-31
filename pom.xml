@@ -15,7 +15,7 @@
                 <artifactId>flyway-maven-plugin</artifactId>
                 <version>10.0.0</version>
                 <configuration>
-                    <url>jdbc:mysql://localhost:3306/hospital</url>
+                    <url>jdbc:mysql://localhost:3306/Proyecto2</url>
                     <user>root</user>
                     <password>1234</password>
                     <locations>

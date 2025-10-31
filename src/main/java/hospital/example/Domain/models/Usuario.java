@@ -1,77 +1,51 @@
 package hospital.example.Domain.models;
 
-import jakarta.persistence.*;
 import hospital.example.Utilities.Rol;
+import jakarta.persistence.*;
 
-@MappedSuperclass
+@Entity
+@Inheritance(strategy = InheritanceType.JOINED)
 public abstract class Usuario {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private int id;  // Identificador único del usuario
+    private int id;
 
-    @Column(nullable = false, length = 100)
-    private String clave;  // Contraseña para acceder al sistema
+    @Column(name = "clave_hash", length = 255)
+    private String claveHash;
 
-    @Column(nullable = false, length = 100)
-    private String nombre;  // Nombre completo del usuario
+    @Column(name = "salt", length = 255)
+    private String salt;
+
+    @Column(length = 100, nullable = false)
+    private String nombre;
 
     @Enumerated(EnumType.STRING)
-    @Column(nullable = false, length = 20)
-    private Rol rol;  // Rol del usuario en el sistema (MEDICO, PACIENTE, FARMACEUTA, ADMIN)
+    @Column(nullable = false)
+    private Rol rol;
 
+    // --- Constructores ---
     public Usuario() {}
 
-    public Usuario(int id, String clave, String nombre, Rol rol) {
+    public Usuario(int id, String claveHash, String nombre, Rol rol) {
         this.id = id;
-        this.clave = clave;
+        this.claveHash = claveHash;
         this.nombre = nombre;
         this.rol = rol;
     }
 
-    // -----------------
-    // Getters & Setters
-    // -----------------
+    // --- Getters y Setters ---
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
 
-    public int getId() {
-        return id;
-    }
+    public String getClaveHash() { return claveHash; }
+    public void setClaveHash(String claveHash) { this.claveHash = claveHash; }
 
-    public void setId(int id) {
-        this.id = id;
-    }
+    public String getSalt() { return salt; }
+    public void setSalt(String salt) { this.salt = salt; }
 
-    public String getClave() {
-        return clave;
-    }
+    public String getNombre() { return nombre; }
+    public void setNombre(String nombre) { this.nombre = nombre; }
 
-    public void setClave(String clave) {
-        this.clave = clave;
-    }
-
-    public String getNombre() {
-        return nombre;
-    }
-
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
-
-    public Rol getRol() {
-        return rol;
-    }
-
-    public void setRol(Rol rol) {
-        this.rol = rol;
-    }
-
-    @Override
-    public String toString() {
-        return "Usuario{" +
-                "id=" + id +
-                ", clave='" + clave + '\'' +
-                ", nombre='" + nombre + '\'' +
-                ", rol=" + rol +
-                '}';
-    }
+    public Rol getRol() { return rol; }
+    public void setRol(Rol rol) { this.rol = rol; }
 }

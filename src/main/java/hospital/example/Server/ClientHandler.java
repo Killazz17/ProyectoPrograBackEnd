@@ -1,11 +1,10 @@
 package hospital.example.Server;
 
 import com.google.gson.Gson;
-import org.example.API.controllers.AuthController;
-import org.example.API.controllers.CarController;
-import org.example.Domain.dtos.RequestDto;
-import org.example.Domain.dtos.ResponseDto;
-import org.example.Domain.dtos.auth.UserResponseDto;
+import hospital.example.API.controllers.*;
+import hospital.example.Domain.dtos.RequestDto;
+import hospital.example.Domain.dtos.ResponseDto;
+import hospital.example.Domain.dtos.auth.UserResponseDto;
 
 import java.io.*;
 import java.net.Socket;
@@ -14,18 +13,36 @@ public class ClientHandler implements Runnable {
 
     private final Socket clientSocket;
     private final AuthController authController;
-    private final CarController carController;
+    private final UsuarioController usuarioController;
+    private final PacienteController pacienteController;
+    private final MedicoController medicoController;
+    private final FarmaceutaController farmaceutaController;
+    private final AdminController adminController;
+    private final MedicamentoController medicamentoController;
+    private final RecetaController recetaController;
     private final SocketServer server;
     private final Gson gson = new Gson();
     private PrintWriter out;
 
     public ClientHandler(Socket clientSocket,
                          AuthController authController,
-                         CarController carController,
+                         UsuarioController usuarioController,
+                         PacienteController pacienteController,
+                         MedicoController medicoController,
+                         FarmaceutaController farmaceutaController,
+                         AdminController adminController,
+                         MedicamentoController medicamentoController,
+                         RecetaController recetaController,
                          SocketServer server) {
         this.clientSocket = clientSocket;
         this.authController = authController;
-        this.carController = carController;
+        this.usuarioController = usuarioController;
+        this.pacienteController = pacienteController;
+        this.medicoController = medicoController;
+        this.farmaceutaController = farmaceutaController;
+        this.adminController = adminController;
+        this.medicamentoController = medicamentoController;
+        this.recetaController = recetaController;
         this.server = server;
     }
 
@@ -33,64 +50,68 @@ public class ClientHandler implements Runnable {
     public void run() {
         try (BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()))) {
             out = new PrintWriter(clientSocket.getOutputStream(), true);
-            System.out.println("[ClientHandler] Connected: " + Thread.currentThread().getName());
+            System.out.println("[ClientHandler] Conectado: " + Thread.currentThread().getName());
 
             String inputJson;
             while ((inputJson = in.readLine()) != null) {
-                System.out.println("[ClientHandler] " + Thread.currentThread().getName() + " received: " + inputJson);
+                System.out.println("[ClientHandler] Recibido: " + inputJson);
 
                 RequestDto request = gson.fromJson(inputJson, RequestDto.class);
                 ResponseDto response = handleRequest(request);
 
-                // Simulate processing
-                try {
-                    Thread.sleep(2000);
-                } catch (InterruptedException ie) {
-                    Thread.currentThread().interrupt();
-                }
-
+                Thread.sleep(200); // Espera opcional
                 out.println(gson.toJson(response));
             }
-        } catch (IOException e) {
-            System.err.println("[ClientHandler] " + Thread.currentThread().getName() + " disconnected");
+
+        } catch (IOException | InterruptedException e) {
+            System.err.println("[ClientHandler] Cliente desconectado: " + Thread.currentThread().getName());
         } finally {
-            try { clientSocket.close(); } catch (IOException ignore) {}
+            try {
+                clientSocket.close();
+            } catch (IOException ignore) {}
             server.removeClient(this);
         }
     }
 
     private ResponseDto handleRequest(RequestDto request) {
-        ResponseDto response;
-
         switch (request.getController()) {
             case "Auth":
-                response = authController.route(request);
+                ResponseDto response = authController.route(request);
 
-                // If login successful, broadcast notification
+                // Emitir notificación si login fue exitoso
                 if ("login".equals(request.getRequest()) && response.isSuccess()) {
                     UserResponseDto user = gson.fromJson(response.getData(), UserResponseDto.class);
-                    String notification = "User " + user.getUsername() + " just logged in!";
-                    System.out.println("[ClientHandler] Login detected, broadcasting: " + notification);
-                    server.broadcast(notification);
+                    String msg = "Usuario " + user.getNombre() + " (" + user.getRol() + ") se conectó.";
+                    System.out.println("[ClientHandler] Broadcast: " + msg);
+                    server.broadcast(msg);
                 }
-                break;
+                return response;
 
-            case "Cars":
-                response = carController.route(request);
-                break;
+            case "Usuarios":
+                return usuarioController.route(request);
+            case "Pacientes":
+                return pacienteController.route(request);
+            case "Medicos":
+                return medicoController.route(request);
+            case "Farmaceutas":
+                return farmaceutaController.route(request);
+            case "Admins":
+                return adminController.route(request);
+            case "Medicamentos":
+                return medicamentoController.route(request);
+            case "Recetas":
+                return recetaController.route(request);
 
             default:
-                response = new ResponseDto(false, "Unknown controller", null);
+                return new ResponseDto(false, "Controlador desconocido: " + request.getController(), null);
         }
-
-        return response;
     }
 
     public void sendMessage(Object message) {
         if (out != null) {
             String jsonMessage = gson.toJson(message);
             out.println(jsonMessage);
-            System.out.println("[ClientHandler] " + Thread.currentThread().getName() + " sent: " + jsonMessage);
+            System.out.println("[ClientHandler] Enviado: " + jsonMessage);
         }
     }
 }

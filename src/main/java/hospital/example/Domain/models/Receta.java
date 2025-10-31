@@ -1,12 +1,10 @@
 package hospital.example.Domain.models;
 
-import jakarta.persistence.*;
-import java.time.LocalDate;
-import java.util.ArrayList;
-import java.util.List;
-
 import hospital.example.Utilities.EstadoReceta;
-import hospital.example.Domain.models.Paciente;
+import jakarta.persistence.*;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @Entity
 @Table(name = "recetas")
@@ -14,20 +12,7 @@ public class Receta {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id_receta")
-    private int idReceta;
-
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
-    @JoinColumn(name = "receta_id") // FK en MedicamentoPrescrito
-    private List<MedicamentoPrescrito> medicamentoPrescritos = new ArrayList<>();
-
-    @ManyToOne(optional = false, fetch = FetchType.LAZY)
-    @JoinColumn(name = "paciente_id", nullable = false, foreignKey = @ForeignKey(name = "fk_receta_paciente"))
-    private Paciente paciente;
-
-    @Enumerated(EnumType.STRING)
-    @Column(nullable = false)
-    private EstadoReceta estado = EstadoReceta.confeccionada;
+    private int id;
 
     @Column(name = "fecha_confeccion", nullable = false)
     private LocalDate fechaConfeccion;
@@ -35,54 +20,26 @@ public class Receta {
     @Column(name = "fecha_retiro", nullable = false)
     private LocalDate fechaRetiro;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private EstadoReceta estado;
+
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "paciente_id")
+    private Paciente paciente;
+
+    @OneToMany(cascade = CascadeType.ALL)
+    @JoinColumn(name = "receta_id") // FK en MedicamentoPrescrito
+    private List<MedicamentoPrescrito> medicamentos;
+
     public Receta() {}
 
-    public Receta(List<MedicamentoPrescrito> medicamentoPrescritos, Paciente paciente, LocalDate fechaConfeccion, LocalDate fechaRetiro) {
-        this.medicamentoPrescritos = medicamentoPrescritos;
-        this.paciente = paciente;
-        this.estado = EstadoReceta.confeccionada;
-        this.fechaConfeccion = fechaConfeccion;
-        this.fechaRetiro = fechaRetiro;
+    public int getId() {
+        return id;
     }
 
-    public void finalizarReceta() {
-        this.estado = EstadoReceta.lista;
-    }
-
-    // -----------------
-    // Getters & Setters
-    // -----------------
-
-    public int getIdReceta() {
-        return idReceta;
-    }
-
-    public void setIdReceta(int idReceta) {
-        this.idReceta = idReceta;
-    }
-
-    public List<MedicamentoPrescrito> getMedicamentos() {
-        return medicamentoPrescritos;
-    }
-
-    public void setMedicamentos(List<MedicamentoPrescrito> medicamentoPrescritos) {
-        this.medicamentoPrescritos = medicamentoPrescritos;
-    }
-
-    public Paciente getPaciente() {
-        return paciente;
-    }
-
-    public void setPaciente(Paciente paciente) {
-        this.paciente = paciente;
-    }
-
-    public EstadoReceta getEstado() {
-        return estado;
-    }
-
-    public void setEstado(EstadoReceta estado) {
-        this.estado = estado;
+    public void setId(int id) {
+        this.id = id;
     }
 
     public LocalDate getFechaConfeccion() {
@@ -101,52 +58,27 @@ public class Receta {
         this.fechaRetiro = fechaRetiro;
     }
 
-    // -----------------
-    // Lógica de medicamentos
-    // -----------------
-
-    public void agregarMed(MedicamentoPrescrito med) {
-        medicamentoPrescritos.add(med);
+    public EstadoReceta getEstado() {
+        return estado;
     }
 
-    public int buscarMed(MedicamentoPrescrito med) {
-        for (int i = 0; i < medicamentoPrescritos.size(); i++) {
-            if (medicamentoPrescritos.get(i).getCodigo().equals(med.getCodigo())) {
-                return i;
-            }
-        }
-        return -1;
+    public void setEstado(EstadoReceta estado) {
+        this.estado = estado;
     }
 
-    public int buscarXCodigoMed(String codigo) {
-        for (int i = 0; i < medicamentoPrescritos.size(); i++) {
-            if (medicamentoPrescritos.get(i).getCodigo().equals(codigo)) {
-                return i;
-            }
-        }
-        return -1;
+    public Paciente getPaciente() {
+        return paciente;
     }
 
-    public void actualizarMed(MedicamentoPrescrito med) {
-        int pos = buscarMed(med);
-        if (pos >= 0)
-            medicamentoPrescritos.set(pos, med);
+    public void setPaciente(Paciente paciente) {
+        this.paciente = paciente;
     }
 
-    public void borrarMed(String codigo) {
-        int pos = buscarXCodigoMed(codigo);
-        if (pos >= 0)
-            medicamentoPrescritos.remove(pos);
+    public List<MedicamentoPrescrito> getMedicamentos() {
+        return medicamentos;
     }
 
-    @Override
-    public String toString() {
-        return "Receta{" +
-                "id=" + idReceta +
-                ", paciente=" + (paciente != null ? paciente.getId() : "null") +
-                ", estado=" + estado +
-                ", fechaConfeccion=" + fechaConfeccion +
-                ", fechaRetiro=" + fechaRetiro +
-                '}';
+    public void setMedicamentos(List<MedicamentoPrescrito> medicamentos) {
+        this.medicamentos = medicamentos;
     }
 }

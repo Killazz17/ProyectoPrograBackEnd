@@ -5,7 +5,7 @@ import jakarta.persistence.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name = "admins")
+@Table(name = "admin")
 public class Admin extends Usuario {
 
     @Column(name = "created_at", updatable = false)
@@ -18,8 +18,12 @@ public class Admin extends Usuario {
         super();
     }
 
-    public Admin(int id, String clave, String nombre, Rol rol) {
-        super(id, clave, nombre, rol);
+    public Admin(int id, String claveHash, String nombre) {
+        super(id, claveHash, nombre, Rol.ADMINISTRADOR);
+    }
+
+    public Admin(int id, String claveHash, String nombre, Rol rol) {
+        super(id, claveHash, nombre, rol);
     }
 
     @PrePersist
@@ -32,10 +36,6 @@ public class Admin extends Usuario {
     protected void onUpdate() {
         updatedAt = LocalDateTime.now();
     }
-
-    // -----------------
-    // Getters & Setters
-    // -----------------
 
     public LocalDateTime getCreatedAt() {
         return createdAt;

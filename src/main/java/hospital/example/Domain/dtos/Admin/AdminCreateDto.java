@@ -1,13 +1,15 @@
-package hospital.example.Domain.dtos.auth;
+package hospital.example.Domain.dtos.Admin;
 
-public class UserResponseDto {
+import hospital.example.Utilities.Rol;
+
+public class AdminCreateDto {
     private int id;
     private String nombre;
-    private String rol;
+    private Rol rol;
 
-    public UserResponseDto() {}
+    public AdminCreateDto() {}
 
-    public UserResponseDto(int id, String nombre, String rol) {
+    public AdminCreateDto(int id, String nombre, Rol rol) {
         this.id = id;
         this.nombre = nombre;
         this.rol = rol;
@@ -21,7 +23,7 @@ public class UserResponseDto {
         return nombre;
     }
 
-    public String getRol() {
+    public Rol getRol() {
         return rol;
     }
 }
