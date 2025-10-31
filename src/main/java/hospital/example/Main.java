@@ -49,35 +49,39 @@ public class Main {
             // Admins
             for (int i = 1; i <= 5; i++) {
                 Admin admin = new Admin();
+                admin.setId(i);
                 admin.setNombre("Admin" + i);
-                adminService.save(admin);
+                admin.setRol(Rol.ADMINISTRADOR);
                 authService.asignarClaveHasheada(admin, "admin" + i);
             }
 
             // Farmaceutas
             for (int i = 1; i <= 5; i++) {
                 Farmaceuta f = new Farmaceuta();
+                f.setId(i + 5); // IDs 6-10
                 f.setNombre("Farmaceuta" + i);
-                farmaceutaService.save(f);
+                f.setRol(Rol.FARMACEUTA);
                 authService.asignarClaveHasheada(f, "farm" + i);
             }
 
             // Médicos
             for (int i = 1; i <= 5; i++) {
                 Medico m = new Medico();
+                m.setId(i + 10); // IDs 11-15
                 m.setNombre("Medico" + i);
                 m.setEspecialidad("Cardiología");
-                medicoService.save(m);
+                m.setRol(Rol.MEDICO);
                 authService.asignarClaveHasheada(m, "med" + i);
             }
 
             // Pacientes
             for (int i = 1; i <= 5; i++) {
                 Paciente p = new Paciente();
+                p.setId(i + 15); // IDs 16-20
                 p.setNombre("Paciente" + i);
                 p.setFechaNacimiento(new Date());
                 p.setNumeroTelefono("8888-000" + i);
-                pacienteService.save(p);
+                p.setRol(Rol.PACIENTE);
                 authService.asignarClaveHasheada(p, "pac" + i);
             }
 
