@@ -7,11 +7,12 @@ import java.time.LocalDate;
 import java.util.List;
 
 @Entity
-@Table(name = "recetas")
+@Table(name = "receta")
 public class Receta {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @Column(name = "id_receta")
     private int id;
 
     @Column(name = "fecha_confeccion", nullable = false)

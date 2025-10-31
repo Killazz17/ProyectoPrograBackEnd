@@ -4,8 +4,8 @@ import jakarta.persistence.*;
 
 @Entity
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name = "tipo", discriminatorType = DiscriminatorType.STRING)
-@Table(name = "medicamentos")
+@DiscriminatorColumn(name = "DTYPE", discriminatorType = DiscriminatorType.STRING)
+@Table(name = "medicamento")
 public class Medicamento {
 
     @Id

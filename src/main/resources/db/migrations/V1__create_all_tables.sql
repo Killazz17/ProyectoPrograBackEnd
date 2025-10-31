@@ -54,7 +54,7 @@ CREATE TABLE receta (
                         fecha_confeccion DATE NOT NULL,
                         fecha_retiro DATE NOT NULL,
                         CONSTRAINT pk_receta PRIMARY KEY (id_receta),
-                        CONSTRAINT fk_receta_paciente FOREIGN KEY (pacieNte_id) REFERENCES paciente(id)
+                        CONSTRAINT fk_receta_paciente FOREIGN KEY (paciente_id) REFERENCES paciente(id)
 );
 
 -- Medicamentos base
