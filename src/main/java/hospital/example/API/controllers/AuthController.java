@@ -9,6 +9,7 @@ import hospital.example.Domain.dtos.auth.UserResponseDto;
 import hospital.example.Domain.models.Usuario;
 
 public class AuthController {
+    private static final String UNKNOWN_ROLE = "UNKNOWN";
     private final AuthService authService;
     private final Gson gson = new Gson();
 
@@ -37,7 +38,8 @@ public class AuthController {
             return new ResponseDto(false, "Credenciales inválidas", null);
         }
 
-        UserResponseDto userDto = new UserResponseDto(usuario.getId(), usuario.getNombre(), usuario.getRol().toString());
+        String rolString = usuario.getRol() != null ? usuario.getRol().toString() : UNKNOWN_ROLE;
+        UserResponseDto userDto = new UserResponseDto(usuario.getId(), usuario.getNombre(), rolString);
         return new ResponseDto(true, "Login exitoso", gson.toJson(userDto));
     }
 }
