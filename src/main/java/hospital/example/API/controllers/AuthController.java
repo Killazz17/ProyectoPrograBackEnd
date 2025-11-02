@@ -37,7 +37,8 @@ public class AuthController {
             return new ResponseDto(false, "Credenciales inválidas", null);
         }
 
-        UserResponseDto userDto = new UserResponseDto(usuario.getId(), usuario.getNombre(), usuario.getRol().toString());
+        String rolString = usuario.getRol() != null ? usuario.getRol().toString() : "UNKNOWN";
+        UserResponseDto userDto = new UserResponseDto(usuario.getId(), usuario.getNombre(), rolString);
         return new ResponseDto(true, "Login exitoso", gson.toJson(userDto));
     }
 }
