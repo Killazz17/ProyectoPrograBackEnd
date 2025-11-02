@@ -32,6 +32,7 @@ public class AdminController {
                     return new ResponseDto(false, "Comando no reconocido en AdminController", null);
             }
         } catch (Exception e) {
+            e.printStackTrace();
             return new ResponseDto(false, "Error en AdminController: " + e.getMessage(), null);
         }
     }
@@ -55,6 +56,7 @@ public class AdminController {
             return new ResponseDto(success, success ? "Admin creado correctamente" : "Error al guardar", null);
 
         } catch (Exception e) {
+            e.printStackTrace();
             return new ResponseDto(false, "Error al crear admin: " + e.getMessage(), null);
         }
     }

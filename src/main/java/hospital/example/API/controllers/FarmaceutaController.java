@@ -32,6 +32,7 @@ public class FarmaceutaController {
                     return new ResponseDto(false, "Comando no reconocido en FarmaceutaController", null);
             }
         } catch (Exception e) {
+            e.printStackTrace();
             return new ResponseDto(false, "Error en FarmaceutaController: " + e.getMessage(), null);
         }
     }
@@ -49,11 +50,13 @@ public class FarmaceutaController {
     private ResponseDto handleCreate(RequestDto request) {
         try {
             FarmaceutaCreateDto dto = gson.fromJson(request.getData(), FarmaceutaCreateDto.class);
-            Farmaceuta f = new Farmaceuta(dto.getId(), "", dto.getNombre());;
+            // Constructor Farmaceuta: (id, claveHash, nombre)
+            Farmaceuta f = new Farmaceuta(dto.getId(), "", dto.getNombre());
             boolean success = farmaceutaService.save(f);
 
             return new ResponseDto(success, success ? "Farmacéuta creado correctamente" : "Error al guardar", null);
         } catch (Exception e) {
+            e.printStackTrace();
             return new ResponseDto(false, "Error al crear farmacéuta: " + e.getMessage(), null);
         }
     }

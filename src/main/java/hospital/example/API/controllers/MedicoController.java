@@ -32,6 +32,7 @@ public class MedicoController {
                     return new ResponseDto(false, "Comando no reconocido en MedicoController", null);
             }
         } catch (Exception e) {
+            e.printStackTrace();
             return new ResponseDto(false, "Error en MedicoController: " + e.getMessage(), null);
         }
     }
@@ -54,6 +55,7 @@ public class MedicoController {
 
             return new ResponseDto(success, success ? "Médico creado correctamente" : "Error al guardar", null);
         } catch (Exception e) {
+            e.printStackTrace();
             return new ResponseDto(false, "Error al crear médico: " + e.getMessage(), null);
         }
     }

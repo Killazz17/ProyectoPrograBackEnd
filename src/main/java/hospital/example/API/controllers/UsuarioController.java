@@ -10,8 +10,6 @@ import hospital.example.Domain.models.*;
 import hospital.example.Utilities.Rol;
 
 import java.util.Date;
-import java.util.List;
-import java.util.stream.Collectors;
 
 public class UsuarioController {
     private final AuthService authService;
@@ -53,23 +51,32 @@ public class UsuarioController {
 
             switch (dto.getRol().toUpperCase()) {
                 case "ADMIN":
+                case "ADMINISTRADOR":
                     usuario = new Admin(dto.getId(), "", dto.getNombre(), Rol.ADMINISTRADOR);
-                    adminService.save((Admin) usuario);
+                    if (!adminService.save((Admin) usuario)) {
+                        return new ResponseDto(false, "Error al guardar administrador", null);
+                    }
                     break;
 
                 case "MEDICO":
                     usuario = new Medico(dto.getId(), "", dto.getNombre(), dto.getEspecialidad());
-                    medicoService.save((Medico) usuario);
+                    if (!medicoService.save((Medico) usuario)) {
+                        return new ResponseDto(false, "Error al guardar médico", null);
+                    }
                     break;
 
                 case "PACIENTE":
                     usuario = new Paciente(dto.getId(), "", dto.getNombre(), dto.getFechaNacimiento(), dto.getNumeroTelefono());
-                    pacienteService.save((Paciente) usuario);
+                    if (!pacienteService.save((Paciente) usuario)) {
+                        return new ResponseDto(false, "Error al guardar paciente", null);
+                    }
                     break;
 
                 case "FARMACEUTA":
                     usuario = new Farmaceuta(dto.getId(), "", dto.getNombre());
-                    farmaceutaService.save((Farmaceuta) usuario);
+                    if (!farmaceutaService.save((Farmaceuta) usuario)) {
+                        return new ResponseDto(false, "Error al guardar farmaceuta", null);
+                    }
                     break;
 
                 default:
@@ -85,7 +92,10 @@ public class UsuarioController {
             );
 
             return new ResponseDto(true, "Usuario creado exitosamente", gson.toJson(responseDto));
+
         } catch (Exception e) {
+            System.err.println("[UsuarioController] Error al crear usuario: " + e.getMessage());
+            e.printStackTrace();
             return new ResponseDto(false, "Error al crear usuario: " + e.getMessage(), null);
         }
     }
