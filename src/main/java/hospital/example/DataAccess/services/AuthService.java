@@ -23,7 +23,14 @@ public class AuthService {
         try (Session session = sessionFactory.openSession()) {
             Usuario u = session.find(Usuario.class, id);
             if (u == null || u.getSalt() == null || u.getClaveHash() == null) return null;
-            return hash(clave, u.getSalt()).equals(u.getClaveHash()) ? u : null;
+            
+            boolean authenticated = hash(clave, u.getSalt()).equals(u.getClaveHash());
+            if (authenticated) {
+                // Eagerly initialize rol before session closes to avoid LazyInitializationException
+                u.getRol(); // Force initialization
+                return u;
+            }
+            return null;
         }
     }
 
