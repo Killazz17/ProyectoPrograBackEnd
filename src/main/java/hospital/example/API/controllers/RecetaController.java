@@ -5,7 +5,9 @@ import hospital.example.DataAccess.services.MedicamentoService;
 import hospital.example.DataAccess.services.PacienteService;
 import hospital.example.DataAccess.services.RecetaService;
 import hospital.example.Domain.dtos.MedicamentoPrescrito.MedicamentoPrescritoDto;
+import hospital.example.Domain.dtos.MedicamentoPrescrito.MedicamentoPrescritoResponseDto;
 import hospital.example.Domain.dtos.Receta.RecetaCreateDto;
+import hospital.example.Domain.dtos.Receta.RecetaDetalladaResponseDto;
 import hospital.example.Domain.dtos.RequestDto;
 import hospital.example.Domain.dtos.ResponseDto;
 import hospital.example.Domain.models.Medicamento;
@@ -18,6 +20,7 @@ import java.time.LocalDate;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class RecetaController {
     private final RecetaService recetaService;
@@ -25,7 +28,8 @@ public class RecetaController {
     private final MedicamentoService medicamentoService;
     private final Gson gson = new Gson();
 
-    public RecetaController(RecetaService recetaService, PacienteService pacienteService, MedicamentoService medicamentoService) {
+    public RecetaController(RecetaService recetaService, PacienteService pacienteService,
+                            MedicamentoService medicamentoService) {
         this.recetaService = recetaService;
         this.pacienteService = pacienteService;
         this.medicamentoService = medicamentoService;
@@ -36,6 +40,8 @@ public class RecetaController {
             switch (request.getRequest()) {
                 case "createReceta":
                     return handleCreate(request);
+                case "getAllRecetasDetalladas":
+                    return handleGetAllDetalladas();
                 default:
                     return new ResponseDto(false, "Comando no reconocido en RecetaController", null);
             }
@@ -72,7 +78,6 @@ public class RecetaController {
                     continue;
                 }
 
-                // ✅ CREAR medicamento prescrito
                 MedicamentoPrescrito mp = new MedicamentoPrescrito(
                         base.getCodigo(),
                         medDto.getCantidad(),
@@ -80,7 +85,6 @@ public class RecetaController {
                         medDto.getIndicaciones()
                 );
 
-                // ✅ CLAVE: Usar addMedicamento para sincronizar relación bidireccional
                 receta.addMedicamento(mp);
 
                 System.out.println("[RecetaController] ✓ Agregado: " + base.getCodigo() +
@@ -112,5 +116,76 @@ public class RecetaController {
             e.printStackTrace();
             return new ResponseDto(false, "Error al procesar receta: " + e.getMessage(), null);
         }
+    }
+
+    // ✅ NUEVO MÉTODO: Obtener todas las recetas con medicamentos
+    // En RecetaController.java, en el método handleGetAllDetalladas()
+    private ResponseDto handleGetAllDetalladas() {
+        try {
+            System.out.println("[RecetaController] ====== OBTENIENDO RECETAS DETALLADAS ======");
+
+            List<Receta> recetas = recetaService.findAllWithMedicamentos();
+
+            System.out.println("[RecetaController] Recetas encontradas: " +
+                    (recetas != null ? recetas.size() : "NULL"));
+
+            if (recetas == null || recetas.isEmpty()) {
+                System.out.println("[RecetaController] ⚠️ No hay recetas disponibles");
+                return new ResponseDto(true, "No hay recetas", gson.toJson(new ArrayList<>()));
+            }
+
+            // Convertir entidades a DTOs
+            List<RecetaDetalladaResponseDto> dtos = new ArrayList<>();
+            for (Receta receta : recetas) {
+                System.out.println("[RecetaController] Procesando receta ID: " + receta.getId() +
+                        " con " + receta.getMedicamentos().size() + " medicamentos");
+                dtos.add(convertirADto(receta));
+            }
+
+            System.out.println("[RecetaController] ✅ Total DTOs creados: " + dtos.size());
+            String json = gson.toJson(dtos);
+            System.out.println("[RecetaController] JSON generado (primeros 200 chars): " +
+                    json.substring(0, Math.min(200, json.length())));
+
+            return new ResponseDto(true, "Recetas obtenidas correctamente", json);
+
+        } catch (Exception e) {
+            System.err.println("[RecetaController] ❌ Error al obtener recetas: " + e.getMessage());
+            e.printStackTrace();
+            return new ResponseDto(false, "Error al obtener recetas: " + e.getMessage(), null);
+        }
+    }
+
+    // ✅ MÉTODO HELPER: Convertir Receta a DTO
+    private RecetaDetalladaResponseDto convertirADto(Receta receta) {
+        // Convertir medicamentos prescritos a DTOs
+        List<MedicamentoPrescritoResponseDto> medicamentosDto = new ArrayList<>();
+
+        for (MedicamentoPrescrito mp : receta.getMedicamentos()) {
+            // Buscar el medicamento base para obtener nombre y presentación
+            Medicamento medicamento = medicamentoService.findByCodigo(mp.getMedicamentoCodigo());
+
+            MedicamentoPrescritoResponseDto medDto = new MedicamentoPrescritoResponseDto(
+                    mp.getMedicamentoCodigo(),
+                    medicamento != null ? medicamento.getNombre() : "Desconocido",
+                    medicamento != null ? medicamento.getPresentacion() : "N/A",
+                    mp.getCantidad(),
+                    mp.getDuracion(),
+                    mp.getIndicaciones()
+            );
+
+            medicamentosDto.add(medDto);
+        }
+
+        // Crear DTO de receta detallada
+        return new RecetaDetalladaResponseDto(
+                receta.getId(),
+                receta.getPaciente().getId(),
+                0, // ⚠️ No tenemos idMedico en el modelo actual
+                receta.getFechaConfeccion().toString(),
+                receta.getFechaRetiro().toString(),
+                receta.getEstado().toString(),
+                medicamentosDto
+        );
     }
 }

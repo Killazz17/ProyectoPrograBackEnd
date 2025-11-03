@@ -55,4 +55,20 @@ public class RecetaService {
             return null;
         }
     }
+
+    public List<Receta> findAllWithMedicamentos() {
+        try (Session session = sessionFactory.openSession()) {
+            // ✅ USAR JOIN FETCH para cargar medicamentos en una sola query
+            return session.createQuery(
+                    "SELECT DISTINCT r FROM Receta r " +
+                            "LEFT JOIN FETCH r.medicamentos " +
+                            "LEFT JOIN FETCH r.paciente",
+                    Receta.class
+            ).list();
+        } catch (Exception e) {
+            System.err.println("[RecetaService] Error al obtener recetas con medicamentos: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
 }
