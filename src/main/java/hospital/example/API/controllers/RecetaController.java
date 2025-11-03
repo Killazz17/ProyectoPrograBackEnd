@@ -118,63 +118,102 @@ public class RecetaController {
         }
     }
 
-    // ✅ NUEVO MÉTODO: Obtener todas las recetas con medicamentos
-    // En RecetaController.java, en el método handleGetAllDetalladas()
     private ResponseDto handleGetAllDetalladas() {
         try {
             System.out.println("[RecetaController] ====== OBTENIENDO RECETAS DETALLADAS ======");
 
+            // ✅ Llamar al método que hace JOIN FETCH
             List<Receta> recetas = recetaService.findAllWithMedicamentos();
-
-            System.out.println("[RecetaController] Recetas encontradas: " +
-                    (recetas != null ? recetas.size() : "NULL"));
 
             if (recetas == null || recetas.isEmpty()) {
                 System.out.println("[RecetaController] ⚠️ No hay recetas disponibles");
                 return new ResponseDto(true, "No hay recetas", gson.toJson(new ArrayList<>()));
             }
 
+            System.out.println("[RecetaController] ✓ Recetas encontradas: " + recetas.size());
+
             // Convertir entidades a DTOs
             List<RecetaDetalladaResponseDto> dtos = new ArrayList<>();
+
             for (Receta receta : recetas) {
-                System.out.println("[RecetaController] Procesando receta ID: " + receta.getId() +
-                        " con " + receta.getMedicamentos().size() + " medicamentos");
-                dtos.add(convertirADto(receta));
+                try {
+                    System.out.println("[RecetaController] Procesando receta ID: " + receta.getId());
+                    System.out.println("[RecetaController]   Medicamentos: " + receta.getMedicamentos().size());
+
+                    RecetaDetalladaResponseDto dto = convertirADto(receta);
+                    dtos.add(dto);
+
+                    System.out.println("[RecetaController]   ✓ DTO creado con " +
+                            dto.getMedicamentos().size() + " medicamentos");
+
+                } catch (Exception e) {
+                    System.err.println("[RecetaController] ⚠️ Error procesando receta #" +
+                            receta.getId() + ": " + e.getMessage());
+                    e.printStackTrace();
+                    // Continuar con la siguiente receta
+                }
             }
 
             System.out.println("[RecetaController] ✅ Total DTOs creados: " + dtos.size());
+
             String json = gson.toJson(dtos);
-            System.out.println("[RecetaController] JSON generado (primeros 200 chars): " +
-                    json.substring(0, Math.min(200, json.length())));
+            System.out.println("[RecetaController] JSON generado (primeros 300 chars): " +
+                    json.substring(0, Math.min(300, json.length())));
 
             return new ResponseDto(true, "Recetas obtenidas correctamente", json);
 
         } catch (Exception e) {
             System.err.println("[RecetaController] ❌ Error al obtener recetas: " + e.getMessage());
             e.printStackTrace();
-            return new ResponseDto(false, "Error al obtener recetas: " + e.getMessage(), null);
+            return new ResponseDto(false, "Error al obtener recetas: " + e.getMessage(),
+                    gson.toJson(new ArrayList<>()));
         }
     }
 
-    // ✅ MÉTODO HELPER: Convertir Receta a DTO
+    // ✅ MÉTODO HELPER ACTUALIZADO
     private RecetaDetalladaResponseDto convertirADto(Receta receta) {
-        // Convertir medicamentos prescritos a DTOs
         List<MedicamentoPrescritoResponseDto> medicamentosDto = new ArrayList<>();
 
-        for (MedicamentoPrescrito mp : receta.getMedicamentos()) {
-            // Buscar el medicamento base para obtener nombre y presentación
-            Medicamento medicamento = medicamentoService.findByCodigo(mp.getMedicamentoCodigo());
+        // ✅ Verificar que la lista de medicamentos no sea null
+        if (receta.getMedicamentos() != null) {
+            System.out.println("[RecetaController]   Convirtiendo " +
+                    receta.getMedicamentos().size() + " medicamentos a DTOs");
 
-            MedicamentoPrescritoResponseDto medDto = new MedicamentoPrescritoResponseDto(
-                    mp.getMedicamentoCodigo(),
-                    medicamento != null ? medicamento.getNombre() : "Desconocido",
-                    medicamento != null ? medicamento.getPresentacion() : "N/A",
-                    mp.getCantidad(),
-                    mp.getDuracion(),
-                    mp.getIndicaciones()
-            );
+            for (MedicamentoPrescrito mp : receta.getMedicamentos()) {
+                try {
+                    // Buscar el medicamento base para obtener nombre y presentación
+                    Medicamento medicamento = medicamentoService.findByCodigo(mp.getMedicamentoCodigo());
 
-            medicamentosDto.add(medDto);
+                    String nombreMed = "Desconocido";
+                    String presentacionMed = "N/A";
+
+                    if (medicamento != null) {
+                        nombreMed = medicamento.getNombre();
+                        presentacionMed = medicamento.getPresentacion();
+                    } else {
+                        System.err.println("[RecetaController]     ⚠️ No se encontró medicamento: " +
+                                mp.getMedicamentoCodigo());
+                    }
+
+                    MedicamentoPrescritoResponseDto medDto = new MedicamentoPrescritoResponseDto(
+                            mp.getMedicamentoCodigo(),
+                            nombreMed,
+                            presentacionMed,
+                            mp.getCantidad(),
+                            mp.getDuracion(),
+                            mp.getIndicaciones()
+                    );
+
+                    medicamentosDto.add(medDto);
+                    System.out.println("[RecetaController]     ✓ " + nombreMed);
+
+                } catch (Exception e) {
+                    System.err.println("[RecetaController]     ❌ Error procesando medicamento: " +
+                            e.getMessage());
+                }
+            }
+        } else {
+            System.out.println("[RecetaController]   ⚠️ Lista de medicamentos es NULL");
         }
 
         // Crear DTO de receta detallada

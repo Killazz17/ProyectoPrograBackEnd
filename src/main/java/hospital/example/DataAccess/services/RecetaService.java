@@ -28,6 +28,7 @@ public class RecetaService {
         } catch (Exception e) {
             if (tx != null) tx.rollback();
             System.err.println("[RecetaService] Error al crear receta: " + e.getMessage());
+            e.printStackTrace();
             return false;
         }
     }
@@ -56,19 +57,38 @@ public class RecetaService {
         }
     }
 
+    // ✅ MÉTODO CORREGIDO: Obtener todas las recetas con medicamentos
     public List<Receta> findAllWithMedicamentos() {
-        try (Session session = sessionFactory.openSession()) {
-            // ✅ USAR JOIN FETCH para cargar medicamentos en una sola query
-            return session.createQuery(
+        Session session = null;
+        try {
+            session = sessionFactory.openSession();
+
+            // ✅ Query con JOIN FETCH para cargar medicamentos y paciente en UNA sola consulta
+            List<Receta> recetas = session.createQuery(
                     "SELECT DISTINCT r FROM Receta r " +
                             "LEFT JOIN FETCH r.medicamentos " +
                             "LEFT JOIN FETCH r.paciente",
                     Receta.class
-            ).list();
+            ).getResultList();
+
+            System.out.println("[RecetaService] ✓ Cargadas " + recetas.size() + " recetas con medicamentos");
+
+            // Verificar que los medicamentos se cargaron
+            for (Receta r : recetas) {
+                System.out.println("[RecetaService]   Receta #" + r.getId() + " tiene " +
+                        r.getMedicamentos().size() + " medicamentos");
+            }
+
+            return recetas;
+
         } catch (Exception e) {
-            System.err.println("[RecetaService] Error al obtener recetas con medicamentos: " + e.getMessage());
+            System.err.println("[RecetaService] ❌ Error al obtener recetas con medicamentos: " + e.getMessage());
             e.printStackTrace();
-            return null;
+            return List.of(); // ✅ Retornar lista vacía en lugar de null
+        } finally {
+            if (session != null && session.isOpen()) {
+                session.close();
+            }
         }
     }
 }
