@@ -42,6 +42,14 @@ public class RecetaController {
                     return handleCreate(request);
                 case "getAllRecetasDetalladas":
                     return handleGetAllDetalladas();
+                case "getAllRecetasDespacho":
+                    return handleGetAllDespacho();
+                case "getRecetasByPaciente":
+                    return handleGetByPaciente(request);
+                case "updateEstado":
+                    return handleUpdateEstado(request);
+                case "getRecetaById":
+                    return handleGetById(request);
                 default:
                     return new ResponseDto(false, "Comando no reconocido en RecetaController", null);
             }
@@ -49,6 +57,8 @@ public class RecetaController {
             return new ResponseDto(false, "Error en RecetaController: " + e.getMessage(), null);
         }
     }
+
+    // ========== MÉTODOS EXISTENTES ==========
 
     private ResponseDto handleCreate(RequestDto request) {
         try {
@@ -122,7 +132,6 @@ public class RecetaController {
         try {
             System.out.println("[RecetaController] ====== OBTENIENDO RECETAS DETALLADAS ======");
 
-            // ✅ Llamar al método que hace JOIN FETCH
             List<Receta> recetas = recetaService.findAllWithMedicamentos();
 
             if (recetas == null || recetas.isEmpty()) {
@@ -132,7 +141,6 @@ public class RecetaController {
 
             System.out.println("[RecetaController] ✓ Recetas encontradas: " + recetas.size());
 
-            // Convertir entidades a DTOs
             List<RecetaDetalladaResponseDto> dtos = new ArrayList<>();
 
             for (Receta receta : recetas) {
@@ -150,7 +158,6 @@ public class RecetaController {
                     System.err.println("[RecetaController] ⚠️ Error procesando receta #" +
                             receta.getId() + ": " + e.getMessage());
                     e.printStackTrace();
-                    // Continuar con la siguiente receta
                 }
             }
 
@@ -170,18 +177,130 @@ public class RecetaController {
         }
     }
 
-    // ✅ MÉTODO HELPER ACTUALIZADO
+    // ========== NUEVOS MÉTODOS PARA DESPACHO ==========
+
+    private ResponseDto handleGetAllDespacho() {
+        try {
+            System.out.println("[RecetaController] Obteniendo todas las recetas para despacho");
+
+            List<Receta> recetas = recetaService.findAllWithMedicamentos();
+
+            if (recetas == null || recetas.isEmpty()) {
+                return new ResponseDto(true, "No hay recetas", gson.toJson(new ArrayList<>()));
+            }
+
+            List<DespachoDto> dtos = recetas.stream()
+                    .map(this::convertirADespachoDto)
+                    .collect(Collectors.toList());
+
+            return new ResponseDto(true, "Recetas obtenidas correctamente", gson.toJson(dtos));
+
+        } catch (Exception e) {
+            System.err.println("[RecetaController] Error al obtener recetas para despacho: " + e.getMessage());
+            e.printStackTrace();
+            return new ResponseDto(false, "Error: " + e.getMessage(), gson.toJson(new ArrayList<>()));
+        }
+    }
+
+    private ResponseDto handleGetByPaciente(RequestDto request) {
+        try {
+            int pacienteId = gson.fromJson(request.getData(), Integer.class);
+            System.out.println("[RecetaController] Obteniendo recetas del paciente " + pacienteId);
+
+            List<Receta> todasRecetas = recetaService.findAllWithMedicamentos();
+
+            List<Receta> recetasPaciente = todasRecetas.stream()
+                    .filter(r -> r.getPaciente().getId() == pacienteId)
+                    .collect(Collectors.toList());
+
+            List<DespachoDto> dtos = recetasPaciente.stream()
+                    .map(this::convertirADespachoDto)
+                    .collect(Collectors.toList());
+
+            System.out.println("[RecetaController] Encontradas " + dtos.size() + " recetas del paciente");
+
+            return new ResponseDto(true, "Recetas del paciente obtenidas", gson.toJson(dtos));
+
+        } catch (Exception e) {
+            System.err.println("[RecetaController] Error al obtener recetas por paciente: " + e.getMessage());
+            e.printStackTrace();
+            return new ResponseDto(false, "Error: " + e.getMessage(), gson.toJson(new ArrayList<>()));
+        }
+    }
+
+    private ResponseDto handleUpdateEstado(RequestDto request) {
+        try {
+            // Parsear datos: {idReceta, estado}
+            com.google.gson.JsonObject data = gson.fromJson(request.getData(), com.google.gson.JsonObject.class);
+            int idReceta = data.get("idReceta").getAsInt();
+            String nuevoEstado = data.get("estado").getAsString();
+
+            System.out.println("[RecetaController] Actualizando estado de receta " + idReceta + " a " + nuevoEstado);
+
+            Receta receta = recetaService.findById(idReceta);
+
+            if (receta == null) {
+                return new ResponseDto(false, "Receta no encontrada", null);
+            }
+
+            // Convertir string a enum
+            EstadoReceta estado;
+            try {
+                estado = EstadoReceta.valueOf(nuevoEstado.toLowerCase());
+            } catch (IllegalArgumentException e) {
+                return new ResponseDto(false, "Estado inválido: " + nuevoEstado, null);
+            }
+
+            boolean success = recetaService.updateEstado(idReceta, estado);
+
+            if (success) {
+                System.out.println("[RecetaController] ✅ Estado actualizado correctamente");
+            }
+
+            return new ResponseDto(success,
+                    success ? "Estado actualizado correctamente" : "Error al actualizar estado",
+                    null);
+
+        } catch (Exception e) {
+            System.err.println("[RecetaController] Error al actualizar estado: " + e.getMessage());
+            e.printStackTrace();
+            return new ResponseDto(false, "Error: " + e.getMessage(), null);
+        }
+    }
+
+    private ResponseDto handleGetById(RequestDto request) {
+        try {
+            int id = gson.fromJson(request.getData(), Integer.class);
+            System.out.println("[RecetaController] Buscando receta con ID " + id);
+
+            Receta receta = recetaService.findByIdWithMedicamentos(id);
+
+            if (receta == null) {
+                return new ResponseDto(false, "Receta no encontrada", null);
+            }
+
+            DespachoDto dto = convertirADespachoDto(receta);
+
+            return new ResponseDto(true, "Receta encontrada", gson.toJson(dto));
+
+        } catch (Exception e) {
+            System.err.println("[RecetaController] Error al buscar receta: " + e.getMessage());
+            e.printStackTrace();
+            return new ResponseDto(false, "Error: " + e.getMessage(), null);
+        }
+    }
+
+    // ========== MÉTODOS HELPER ==========
+
     private RecetaDetalladaResponseDto convertirADto(Receta receta) {
         List<MedicamentoPrescritoResponseDto> medicamentosDto = new ArrayList<>();
 
-        // ✅ Verificar que la lista de medicamentos no sea null
         if (receta.getMedicamentos() != null) {
             System.out.println("[RecetaController]   Convirtiendo " +
                     receta.getMedicamentos().size() + " medicamentos a DTOs");
 
             for (MedicamentoPrescrito mp : receta.getMedicamentos()) {
                 try {
-                    // Buscar el medicamento base para obtener nombre y presentación
                     Medicamento medicamento = medicamentoService.findByCodigo(mp.getMedicamentoCodigo());
 
                     String nombreMed = "Desconocido";
@@ -216,15 +335,49 @@ public class RecetaController {
             System.out.println("[RecetaController]   ⚠️ Lista de medicamentos es NULL");
         }
 
-        // Crear DTO de receta detallada
         return new RecetaDetalladaResponseDto(
                 receta.getId(),
                 receta.getPaciente().getId(),
-                0, // ⚠️ No tenemos idMedico en el modelo actual
+                0,
                 receta.getFechaConfeccion().toString(),
                 receta.getFechaRetiro().toString(),
                 receta.getEstado().toString(),
                 medicamentosDto
         );
+    }
+
+    private DespachoDto convertirADespachoDto(Receta receta) {
+        return new DespachoDto(
+                receta.getId(),
+                receta.getPaciente().getId(),
+                receta.getPaciente().getNombre(),
+                receta.getFechaConfeccion().toString(),
+                receta.getFechaRetiro().toString(),
+                receta.getEstado().toString(),
+                receta.getMedicamentos() != null ? receta.getMedicamentos().size() : 0
+        );
+    }
+
+    // DTO interno para despacho
+    private static class DespachoDto {
+        private int id;
+        private int idPaciente;
+        private String nombrePaciente;
+        private String fechaConfeccion;
+        private String fechaRetiro;
+        private String estado;
+        private int cantidadMedicamentos;
+
+        public DespachoDto(int id, int idPaciente, String nombrePaciente,
+                           String fechaConfeccion, String fechaRetiro,
+                           String estado, int cantidadMedicamentos) {
+            this.id = id;
+            this.idPaciente = idPaciente;
+            this.nombrePaciente = nombrePaciente;
+            this.fechaConfeccion = fechaConfeccion;
+            this.fechaRetiro = fechaRetiro;
+            this.estado = estado;
+            this.cantidadMedicamentos = cantidadMedicamentos;
+        }
     }
 }
