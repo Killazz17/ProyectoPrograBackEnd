@@ -169,36 +169,62 @@ public class Main {
             }
 
             // ----------------------------
-            // 6. RECETAS (50 recetas)
+            // 6. RECETAS (30 recetas - 25% en cada estado)
             // ----------------------------
-            System.out.println("\n📋 Creando Recetas...");
+            System.out.println("\n📋 Creando 30 Recetas (25% por estado)...");
 
             LocalDate hoy = LocalDate.now();
 
-            for (int i = 0; i < 50; i++) {
+            // Array de estados para distribuir equitativamente
+            EstadoReceta[] estados = {
+                    EstadoReceta.confeccionada, EstadoReceta.confeccionada, EstadoReceta.confeccionada, EstadoReceta.confeccionada,
+                    EstadoReceta.confeccionada, EstadoReceta.confeccionada, EstadoReceta.confeccionada, // 7 confeccionadas
+                    EstadoReceta.proceso, EstadoReceta.proceso, EstadoReceta.proceso, EstadoReceta.proceso,
+                    EstadoReceta.proceso, EstadoReceta.proceso, EstadoReceta.proceso, EstadoReceta.proceso, // 8 en proceso
+                    EstadoReceta.lista, EstadoReceta.lista, EstadoReceta.lista, EstadoReceta.lista,
+                    EstadoReceta.lista, EstadoReceta.lista, EstadoReceta.lista, EstadoReceta.lista, // 8 listas
+                    EstadoReceta.entregada, EstadoReceta.entregada, EstadoReceta.entregada, EstadoReceta.entregada,
+                    EstadoReceta.entregada, EstadoReceta.entregada, EstadoReceta.entregada // 7 entregadas
+            };
+
+            int contadorEstados[] = {0, 0, 0, 0}; // confeccionada, proceso, lista, entregada
+
+            for (int i = 0; i < 30; i++) {
                 Receta receta = new Receta();
 
-                // Paciente aleatorio (IDs 14-23)
+                // Paciente aleatorio (IDs 14-23) - ciclamos entre los 10 pacientes
                 int idPaciente = 14 + (i % 10);
                 Paciente paciente = pacienteService.findById(idPaciente);
                 receta.setPaciente(paciente);
 
-                // Fecha de confección: distribuida en últimos 12 meses
-                int diasAtras = (i * 7) % 365;
+                // Fecha de confección: distribuida en últimos 30 días
+                int diasAtras = i; // Una receta por día en los últimos 30 días
                 LocalDate fechaConfeccion = hoy.minusDays(diasAtras);
                 receta.setFechaConfeccion(fechaConfeccion);
                 receta.setFechaRetiro(fechaConfeccion.plusDays(7));
 
-                // Estado según antigüedad
-                EstadoReceta estado;
-                if (diasAtras < 7) estado = EstadoReceta.confeccionada;
-                else if (diasAtras < 14) estado = EstadoReceta.proceso;
-                else if (diasAtras < 30) estado = EstadoReceta.lista;
-                else estado = EstadoReceta.entregada;
+                // Asignar estado según el array predefinido
+                EstadoReceta estado = estados[i];
                 receta.setEstado(estado);
 
-                // Agregar 1-4 medicamentos
-                int cantidadMeds = 1 + (i % 4);
+                // Contar estados para reporte
+                switch (estado) {
+                    case confeccionada:
+                        contadorEstados[0]++;
+                        break;
+                    case proceso:
+                        contadorEstados[1]++;
+                        break;
+                    case lista:
+                        contadorEstados[2]++;
+                        break;
+                    case entregada:
+                        contadorEstados[3]++;
+                        break;
+                }
+
+                // Agregar 1-3 medicamentos por receta
+                int cantidadMeds = 1 + (i % 3);
                 for (int j = 0; j < cantidadMeds; j++) {
                     String codigoMed = String.format("M%03d", ((i + j) % 30) + 1);
                     Medicamento med = medicamentoService.findByCodigo(codigoMed);
@@ -216,7 +242,7 @@ public class Main {
 
                 if (recetaService.createReceta(receta)) {
                     System.out.println("  ✓ Receta #" + (i+1) + " - Paciente" + (idPaciente-13) +
-                            " - " + cantidadMeds + " meds - " + estado);
+                            " - " + cantidadMeds + " meds - Estado: " + estado);
                 }
             }
 
@@ -229,7 +255,15 @@ public class Main {
             System.out.println("  • 6 Médicos");
             System.out.println("  • 10 Pacientes");
             System.out.println("  • 30 Medicamentos");
-            System.out.println("  • 50 Recetas");
+            System.out.println("  • 30 Recetas:");
+            System.out.println("    - " + contadorEstados[0] + " Confeccionadas (" +
+                    String.format("%.1f%%", (contadorEstados[0] * 100.0 / 30)) + ")");
+            System.out.println("    - " + contadorEstados[1] + " En Proceso (" +
+                    String.format("%.1f%%", (contadorEstados[1] * 100.0 / 30)) + ")");
+            System.out.println("    - " + contadorEstados[2] + " Listas (" +
+                    String.format("%.1f%%", (contadorEstados[2] * 100.0 / 30)) + ")");
+            System.out.println("    - " + contadorEstados[3] + " Entregadas (" +
+                    String.format("%.1f%%", (contadorEstados[3] * 100.0 / 30)) + ")");
 
             System.out.println("\n📝 CREDENCIALES:");
             System.out.println("  Admin1 / admin1");
