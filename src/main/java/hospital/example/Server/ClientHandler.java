@@ -20,6 +20,7 @@ public class ClientHandler implements Runnable {
     private final AdminController adminController;
     private final MedicamentoController medicamentoController;
     private final RecetaController recetaController;
+    private final MedicamentoPrescritoController medicamentoPrescritoController;
     private final SocketServer server;
     private final Gson gson = new Gson();
     private PrintWriter out;
@@ -33,6 +34,7 @@ public class ClientHandler implements Runnable {
                          AdminController adminController,
                          MedicamentoController medicamentoController,
                          RecetaController recetaController,
+                         MedicamentoPrescritoController medicamentoPrescritoController,
                          SocketServer server) {
         this.clientSocket = clientSocket;
         this.authController = authController;
@@ -43,6 +45,7 @@ public class ClientHandler implements Runnable {
         this.adminController = adminController;
         this.medicamentoController = medicamentoController;
         this.recetaController = recetaController;
+        this.medicamentoPrescritoController = medicamentoPrescritoController;
         this.server = server;
     }
 
@@ -101,6 +104,8 @@ public class ClientHandler implements Runnable {
                 return medicamentoController.route(request);
             case "Recetas":
                 return recetaController.route(request);
+            case "MedicamentosPrescritos":
+                return medicamentoPrescritoController.route(request);
 
             default:
                 return new ResponseDto(false, "Controlador desconocido: " + request.getController(), null);

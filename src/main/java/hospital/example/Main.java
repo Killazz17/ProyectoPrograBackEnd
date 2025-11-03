@@ -43,6 +43,7 @@ public class Main {
         AdminController adminController = new AdminController(adminService);
         MedicamentoController medicamentoController = new MedicamentoController(medicamentoService);
         RecetaController recetaController = new RecetaController(recetaService, pacienteService, medicamentoService);
+        MedicamentoPrescritoController medicamentoPrescritoController = new MedicamentoPrescritoController(recetaService, medicamentoService);
 
         // ----------------------------
         // Datos iniciales de prueba
@@ -244,7 +245,7 @@ public class Main {
         SocketServer requestServer = new SocketServer(
                 requestPort, authController, usuarioController, pacienteController,
                 medicoController, farmaceutaController, adminController,
-                medicamentoController, recetaController
+                medicamentoController, recetaController, medicamentoPrescritoController
         );
 
         int messagePort = 7001;

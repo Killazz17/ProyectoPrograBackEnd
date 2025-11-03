@@ -21,6 +21,7 @@ public class SocketServer {
     private final AdminController adminController;
     private final MedicamentoController medicamentoController;
     private final RecetaController recetaController;
+    private final MedicamentoPrescritoController medicamentoPrescritoController;
 
     private ServerSocket serverSocket;
     private final List<ClientHandler> activeClients = new CopyOnWriteArrayList<>();
@@ -34,7 +35,8 @@ public class SocketServer {
                         FarmaceutaController farmaceutaController,
                         AdminController adminController,
                         MedicamentoController medicamentoController,
-                        RecetaController recetaController) {
+                        RecetaController recetaController,
+                        MedicamentoPrescritoController medicamentoPrescritoController) {
 
         this.port = port;
         this.authController = authController;
@@ -45,6 +47,7 @@ public class SocketServer {
         this.adminController = adminController;
         this.medicamentoController = medicamentoController;
         this.recetaController = recetaController;
+        this.medicamentoPrescritoController = medicamentoPrescritoController;
     }
 
     public void start() {
@@ -75,9 +78,9 @@ public class SocketServer {
                         adminController,
                         medicamentoController,
                         recetaController,
+                        medicamentoPrescritoController,
                         this
                 );
-
                 activeClients.add(handler);
                 new Thread(handler, "ClientHandler-" + activeClients.size()).start();
             }
