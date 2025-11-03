@@ -44,7 +44,7 @@ public class MedicoController {
                 .map(m -> new MedicoResponseDto(m.getId(), m.getNombre(), m.getEspecialidad()))
                 .collect(Collectors.toList());
 
-        return new ResponseDto(true, "Médicos cargados correctamente", gson.toJson(dtos));
+        return new ResponseDto(true, "Medicos cargados correctamente", gson.toJson(dtos));
     }
 
     private ResponseDto handleCreate(RequestDto request) {
@@ -53,16 +53,16 @@ public class MedicoController {
             Medico m = new Medico(dto.getId(), "", dto.getNombre(), dto.getEspecialidad());
             boolean success = medicoService.save(m);
 
-            return new ResponseDto(success, success ? "Médico creado correctamente" : "Error al guardar", null);
+            return new ResponseDto(success, success ? "Medico creado correctamente" : "Error al guardar", null);
         } catch (Exception e) {
             e.printStackTrace();
-            return new ResponseDto(false, "Error al crear médico: " + e.getMessage(), null);
+            return new ResponseDto(false, "Error al crear medico: " + e.getMessage(), null);
         }
     }
 
     private ResponseDto handleDelete(RequestDto request) {
         int id = Integer.parseInt(request.getData());
         boolean success = medicoService.delete(id);
-        return new ResponseDto(success, success ? "Médico eliminado" : "No se encontró el médico", null);
+        return new ResponseDto(success, success ? "Medico eliminado" : "No se encontro el médico", null);
     }
 }

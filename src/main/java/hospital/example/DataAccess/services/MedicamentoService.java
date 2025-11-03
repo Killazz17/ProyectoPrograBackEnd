@@ -11,14 +11,10 @@ public class MedicamentoService {
 
     private final SessionFactory sessionFactory;
 
-    // ✅ Constructor para compatibilidad con Main.java
     public MedicamentoService(SessionFactory sessionFactory) {
         this.sessionFactory = sessionFactory;
     }
 
-    // ------------------------
-    // Obtener todos los medicamentos
-    // ------------------------
     public List<Medicamento> findAll() {
         try (Session session = sessionFactory.openSession()) {
             return session.createQuery("FROM Medicamento", Medicamento.class).list();
@@ -28,9 +24,6 @@ public class MedicamentoService {
         }
     }
 
-    // ------------------------
-    // Guardar un nuevo medicamento
-    // ------------------------
     public boolean save(Medicamento medicamento) {
         Transaction tx = null;
         try (Session session = sessionFactory.openSession()) {
@@ -45,9 +38,6 @@ public class MedicamentoService {
         }
     }
 
-    // ------------------------
-    // Buscar medicamento por código
-    // ------------------------
     public Medicamento findByCodigo(String codigo) {
         try (Session session = sessionFactory.openSession()) {
             return session.find(Medicamento.class, codigo);
@@ -57,9 +47,6 @@ public class MedicamentoService {
         }
     }
 
-    // ------------------------
-    // Eliminar medicamento por código
-    // ------------------------
     public boolean delete(String codigo) {
         Transaction tx = null;
         try (Session session = sessionFactory.openSession()) {

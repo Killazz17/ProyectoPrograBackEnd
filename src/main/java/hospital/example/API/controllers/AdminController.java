@@ -64,6 +64,6 @@ public class AdminController {
     private ResponseDto handleDelete(RequestDto request) {
         int id = Integer.parseInt(request.getData());
         boolean success = adminService.delete(id);
-        return new ResponseDto(success, success ? "Admin eliminado" : "No se encontró el admin", null);
+        return new ResponseDto(success, success ? "Admin eliminado" : "No se encontro el admin", null);
     }
 }

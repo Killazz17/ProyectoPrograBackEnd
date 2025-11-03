@@ -16,9 +16,6 @@ public class PacienteService {
         this.sessionFactory = sessionFactory;
     }
 
-    // ------------------------
-    // Obtener todos los pacientes
-    // ------------------------
     public List<Paciente> findAll() {
         try (Session session = sessionFactory.openSession()) {
             return session.createQuery("FROM Paciente", Paciente.class).list();
@@ -27,10 +24,6 @@ public class PacienteService {
             return null;
         }
     }
-
-    // ------------------------
-    // Guardar un nuevo paciente
-    // ------------------------
 
     public boolean save(Paciente paciente) {
         Session session = null;
@@ -50,9 +43,6 @@ public class PacienteService {
         }
     }
 
-    // ------------------------
-    // Buscar paciente por ID
-    // ------------------------
     public Paciente findById(int id) {
         try (Session session = sessionFactory.openSession()) {
             return session.find(Paciente.class, id);
@@ -62,9 +52,6 @@ public class PacienteService {
         }
     }
 
-    // ------------------------
-    // Eliminar paciente por ID
-    // ------------------------
     public boolean delete(int id) {
         Transaction tx = null;
         try (Session session = sessionFactory.openSession()) {

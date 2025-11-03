@@ -16,9 +16,6 @@ public class MedicoService {
         this.sessionFactory = sessionFactory;
     }
 
-    // ------------------------
-    // Obtener todos los médicos
-    // ------------------------
     public List<Medico> findAll() {
         try (Session session = sessionFactory.openSession()) {
             return session.createQuery("FROM Medico", Medico.class).list();
@@ -27,10 +24,6 @@ public class MedicoService {
             return null;
         }
     }
-
-    // ------------------------
-    // Guardar un nuevo médico
-    // ------------------------
 
     public boolean save(Medico medico) {
         Session session = null;
@@ -50,9 +43,6 @@ public class MedicoService {
         }
     }
 
-    // ------------------------
-    // Buscar médico por ID
-    // ------------------------
     public Medico findById(int id) {
         try (Session session = sessionFactory.openSession()) {
             return session.find(Medico.class, id);
@@ -62,9 +52,6 @@ public class MedicoService {
         }
     }
 
-    // ------------------------
-    // Eliminar médico por ID
-    // ------------------------
     public boolean delete(int id) {
         Transaction tx = null;
         try (Session session = sessionFactory.openSession()) {
@@ -78,7 +65,7 @@ public class MedicoService {
             return false;
         } catch (Exception e) {
             if (tx != null) tx.rollback();
-            System.err.println("[MedicoService] Error al eliminar médico: " + e.getMessage());
+            System.err.println("[MedicoService] Error al eliminar medico: " + e.getMessage());
             return false;
         }
     }

@@ -58,11 +58,8 @@ public class RecetaController {
         }
     }
 
-    // ========== MÉTODOS EXISTENTES ==========
-
     private ResponseDto handleCreate(RequestDto request) {
         try {
-            System.out.println("[RecetaController] === INICIANDO CREACIÓN DE RECETA ===");
             RecetaCreateDto dto = gson.fromJson(request.getData(), RecetaCreateDto.class);
 
             Paciente paciente = pacienteService.findById(dto.getPacienteId());
@@ -78,13 +75,11 @@ public class RecetaController {
             receta.setFechaRetiro(dto.getFechaRetiro().toInstant()
                     .atZone(ZoneId.systemDefault()).toLocalDate());
 
-            System.out.println("[RecetaController] Procesando " + dto.getMedicamentos().size() + " medicamentos...");
-
             for (MedicamentoPrescritoDto medDto : dto.getMedicamentos()) {
                 Medicamento base = medicamentoService.findByCodigo(medDto.getCodigo());
 
                 if (base == null) {
-                    System.err.println("[RecetaController] ⚠️  Medicamento no encontrado: " + medDto.getCodigo());
+                    System.err.println("[RecetaController]  Medicamento no encontrado: " + medDto.getCodigo());
                     continue;
                 }
 
@@ -97,8 +92,6 @@ public class RecetaController {
 
                 receta.addMedicamento(mp);
 
-                System.out.println("[RecetaController] ✓ Agregado: " + base.getCodigo() +
-                        " - " + base.getNombre() + " (Cant: " + medDto.getCantidad() + ")");
             }
 
             if (receta.getMedicamentos().isEmpty()) {
@@ -106,15 +99,12 @@ public class RecetaController {
                 return new ResponseDto(false, "No se encontraron medicamentos válidos", null);
             }
 
-            System.out.println("[RecetaController] Guardando receta con " +
-                    receta.getMedicamentos().size() + " medicamentos...");
-
             boolean success = recetaService.createReceta(receta);
 
             if (success) {
-                System.out.println("[RecetaController] ✅ RECETA CREADA EXITOSAMENTE - ID: " + receta.getId());
+                System.out.println("[RecetaController] RECETA CREADA EXITOSAMENTE - ID: " + receta.getId());
             } else {
-                System.err.println("[RecetaController] ❌ ERROR AL GUARDAR RECETA");
+                System.err.println("[RecetaController] ERROR AL GUARDAR RECETA");
             }
 
             return new ResponseDto(success,
@@ -122,7 +112,7 @@ public class RecetaController {
                     null);
 
         } catch (Exception e) {
-            System.err.println("[RecetaController] ❌ EXCEPCIÓN: " + e.getMessage());
+            System.err.println("[RecetaController] EXCEPCIÓN: " + e.getMessage());
             e.printStackTrace();
             return new ResponseDto(false, "Error al procesar receta: " + e.getMessage(), null);
         }
@@ -130,59 +120,43 @@ public class RecetaController {
 
     private ResponseDto handleGetAllDetalladas() {
         try {
-            System.out.println("[RecetaController] ====== OBTENIENDO RECETAS DETALLADAS ======");
-
             List<Receta> recetas = recetaService.findAllWithMedicamentos();
 
             if (recetas == null || recetas.isEmpty()) {
-                System.out.println("[RecetaController] ⚠️ No hay recetas disponibles");
+                System.out.println("[RecetaController] No hay recetas disponibles");
                 return new ResponseDto(true, "No hay recetas", gson.toJson(new ArrayList<>()));
             }
 
-            System.out.println("[RecetaController] ✓ Recetas encontradas: " + recetas.size());
+            System.out.println("[RecetaController] Recetas encontradas: " + recetas.size());
 
             List<RecetaDetalladaResponseDto> dtos = new ArrayList<>();
 
             for (Receta receta : recetas) {
                 try {
-                    System.out.println("[RecetaController] Procesando receta ID: " + receta.getId());
-                    System.out.println("[RecetaController]   Medicamentos: " + receta.getMedicamentos().size());
-
                     RecetaDetalladaResponseDto dto = convertirADto(receta);
                     dtos.add(dto);
 
-                    System.out.println("[RecetaController]   ✓ DTO creado con " +
-                            dto.getMedicamentos().size() + " medicamentos");
-
                 } catch (Exception e) {
-                    System.err.println("[RecetaController] ⚠️ Error procesando receta #" +
+                    System.err.println("[RecetaController] Error procesando receta #" +
                             receta.getId() + ": " + e.getMessage());
                     e.printStackTrace();
                 }
             }
 
-            System.out.println("[RecetaController] ✅ Total DTOs creados: " + dtos.size());
-
             String json = gson.toJson(dtos);
-            System.out.println("[RecetaController] JSON generado (primeros 300 chars): " +
-                    json.substring(0, Math.min(300, json.length())));
 
             return new ResponseDto(true, "Recetas obtenidas correctamente", json);
 
         } catch (Exception e) {
-            System.err.println("[RecetaController] ❌ Error al obtener recetas: " + e.getMessage());
+            System.err.println("[RecetaController] Error al obtener recetas: " + e.getMessage());
             e.printStackTrace();
             return new ResponseDto(false, "Error al obtener recetas: " + e.getMessage(),
                     gson.toJson(new ArrayList<>()));
         }
     }
 
-    // ========== NUEVOS MÉTODOS PARA DESPACHO ==========
-
     private ResponseDto handleGetAllDespacho() {
         try {
-            System.out.println("[RecetaController] Obteniendo todas las recetas para despacho");
-
             List<Receta> recetas = recetaService.findAllWithMedicamentos();
 
             if (recetas == null || recetas.isEmpty()) {
@@ -230,12 +204,9 @@ public class RecetaController {
 
     private ResponseDto handleUpdateEstado(RequestDto request) {
         try {
-            // Parsear datos: {idReceta, estado}
             com.google.gson.JsonObject data = gson.fromJson(request.getData(), com.google.gson.JsonObject.class);
             int idReceta = data.get("idReceta").getAsInt();
             String nuevoEstado = data.get("estado").getAsString();
-
-            System.out.println("[RecetaController] Actualizando estado de receta " + idReceta + " a " + nuevoEstado);
 
             Receta receta = recetaService.findById(idReceta);
 
@@ -248,13 +219,13 @@ public class RecetaController {
             try {
                 estado = EstadoReceta.valueOf(nuevoEstado.toLowerCase());
             } catch (IllegalArgumentException e) {
-                return new ResponseDto(false, "Estado inválido: " + nuevoEstado, null);
+                return new ResponseDto(false, "Estado invalido: " + nuevoEstado, null);
             }
 
             boolean success = recetaService.updateEstado(idReceta, estado);
 
             if (success) {
-                System.out.println("[RecetaController] ✅ Estado actualizado correctamente");
+                System.out.println("[RecetaController] Estado actualizado correctamente");
             }
 
             return new ResponseDto(success,
@@ -271,7 +242,6 @@ public class RecetaController {
     private ResponseDto handleGetById(RequestDto request) {
         try {
             int id = gson.fromJson(request.getData(), Integer.class);
-            System.out.println("[RecetaController] Buscando receta con ID " + id);
 
             Receta receta = recetaService.findByIdWithMedicamentos(id);
 
@@ -290,14 +260,10 @@ public class RecetaController {
         }
     }
 
-    // ========== MÉTODOS HELPER ==========
-
     private RecetaDetalladaResponseDto convertirADto(Receta receta) {
         List<MedicamentoPrescritoResponseDto> medicamentosDto = new ArrayList<>();
 
         if (receta.getMedicamentos() != null) {
-            System.out.println("[RecetaController]   Convirtiendo " +
-                    receta.getMedicamentos().size() + " medicamentos a DTOs");
 
             for (MedicamentoPrescrito mp : receta.getMedicamentos()) {
                 try {
@@ -310,7 +276,7 @@ public class RecetaController {
                         nombreMed = medicamento.getNombre();
                         presentacionMed = medicamento.getPresentacion();
                     } else {
-                        System.err.println("[RecetaController]     ⚠️ No se encontró medicamento: " +
+                        System.err.println("[RecetaController]  ️ No se encontro medicamento: " +
                                 mp.getMedicamentoCodigo());
                     }
 
@@ -324,15 +290,12 @@ public class RecetaController {
                     );
 
                     medicamentosDto.add(medDto);
-                    System.out.println("[RecetaController]     ✓ " + nombreMed);
 
                 } catch (Exception e) {
-                    System.err.println("[RecetaController]     ❌ Error procesando medicamento: " +
+                    System.err.println("[RecetaController]  Error procesando medicamento: " +
                             e.getMessage());
                 }
             }
-        } else {
-            System.out.println("[RecetaController]   ⚠️ Lista de medicamentos es NULL");
         }
 
         return new RecetaDetalladaResponseDto(

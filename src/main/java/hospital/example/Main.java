@@ -1,4 +1,3 @@
-// src/main/java/hospital/example/Main.java
 package hospital.example;
 
 import hospital.example.API.controllers.*;
@@ -12,12 +11,13 @@ import hospital.example.Utilities.EstadoReceta;
 import java.time.LocalDate;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Random;
+import java.util.Set;
 
 public class Main {
     public static void main(String[] args) {
         var sessionFactory = HibernateUtil.getSessionFactory();
 
-        // Servicios
         AuthService authService = new AuthService(sessionFactory);
         PacienteService pacienteService = new PacienteService(sessionFactory);
         MedicoService medicoService = new MedicoService(sessionFactory);
@@ -26,7 +26,6 @@ public class Main {
         MedicamentoService medicamentoService = new MedicamentoService(sessionFactory);
         RecetaService recetaService = new RecetaService(sessionFactory);
 
-        // Controladores
         AuthController authController = new AuthController(authService);
 
         UsuarioController usuarioController = new UsuarioController(
@@ -48,18 +47,15 @@ public class Main {
         // ----------------------------
         // Datos iniciales de prueba
         // ----------------------------
-        boolean crearDatosIniciales = false; // ⚠️ Cambiar a false después de primera ejecución
+        boolean crearDatosIniciales = false;
         if (crearDatosIniciales) {
-            System.out.println("\n╔═══════════════════════════════════════════╗");
-            System.out.println("║    CREANDO DATOS INICIALES REALISTAS      ║");
-            System.out.println("╚═══════════════════════════════════════════╝\n");
 
             // ----------------------------
-            // 1. ADMINS (IDs 1-3) - SOLO USERNAME
+            // 1. ADMINS (IDs 1-3)
             // ----------------------------
-            System.out.println("👨‍💼 Creando Administradores...");
+            System.out.println("Creando Administradores...");
             for (int i = 1; i <= 3; i++) {
-                Admin admin = new Admin(i, "", "Admin" + i); // ✅ SOLO "Admin1"
+                Admin admin = new Admin(i, "", "Admin" + i);
                 if (adminService.save(admin)) {
                     authService.asignarClaveHasheada(admin, "admin" + i);
                     System.out.println("  ✓ Admin" + i + " (user: Admin" + i + ", pass: admin" + i + ")");
@@ -67,12 +63,12 @@ public class Main {
             }
 
             // ----------------------------
-            // 2. FARMACEUTAS (IDs 4-7) - SOLO USERNAME
+            // 2. FARMACEUTAS (IDs 4-7)
             // ----------------------------
-            System.out.println("\n💊 Creando Farmacéutas...");
+            System.out.println("\nCreando Farmacéutas...");
             for (int i = 1; i <= 4; i++) {
                 int id = 3 + i;
-                Farmaceuta f = new Farmaceuta(id, "", "Farmaceuta" + i); // ✅ SOLO "Farmaceuta1"
+                Farmaceuta f = new Farmaceuta(id, "", "Farmaceuta" + i);
                 if (farmaceutaService.save(f)) {
                     authService.asignarClaveHasheada(f, "farm" + i);
                     System.out.println("  ✓ Farmaceuta" + i + " (user: Farmaceuta" + i + ", pass: farm" + i + ")");
@@ -80,15 +76,15 @@ public class Main {
             }
 
             // ----------------------------
-            // 3. MÉDICOS (IDs 8-13) - SOLO USERNAME
+            // 3. MÉDICOS (IDs 8-13)
             // ----------------------------
-            System.out.println("\n👨‍⚕️ Creando Médicos...");
+            System.out.println("\nCreando Médicos...");
             String[] especialidades = {"Cardiología", "Pediatría", "Medicina Interna",
                     "Neurología", "Dermatología", "Traumatología"};
 
             for (int i = 1; i <= 6; i++) {
                 int id = 7 + i;
-                Medico m = new Medico(id, "", "Medico" + i, especialidades[i-1]); // ✅ SOLO "Medico1"
+                Medico m = new Medico(id, "", "Medico" + i, especialidades[i-1]);
                 if (medicoService.save(m)) {
                     authService.asignarClaveHasheada(m, "med" + i);
                     System.out.println("  ✓ Medico" + i + " - " + especialidades[i-1] +
@@ -97,9 +93,9 @@ public class Main {
             }
 
             // ----------------------------
-            // 4. PACIENTES (IDs 14-23) - SOLO USERNAME
+            // 4. PACIENTES (IDs 14-23)
             // ----------------------------
-            System.out.println("\n🏥 Creando Pacientes...");
+            System.out.println("\nCreando Pacientes...");
             String[][] fechasTels = {
                     {"1985-03-15", "8888-1234"},
                     {"1990-07-22", "8888-2345"},
@@ -117,7 +113,7 @@ public class Main {
                 int id = 13 + i;
                 Date fechaNac = parseFecha(fechasTels[i-1][0]);
 
-                Paciente p = new Paciente(id, "", "Paciente" + i, fechaNac, fechasTels[i-1][1]); // ✅ SOLO "Paciente1"
+                Paciente p = new Paciente(id, "", "Paciente" + i, fechaNac, fechasTels[i-1][1]);
                 if (pacienteService.save(p)) {
                     authService.asignarClaveHasheada(p, "pac" + i);
                     System.out.println("  ✓ Paciente" + i + " (user: Paciente" + i + ", pass: pac" + i + ")");
@@ -127,7 +123,7 @@ public class Main {
             // ----------------------------
             // 5. MEDICAMENTOS (30 medicamentos)
             // ----------------------------
-            System.out.println("\n💉 Creando Medicamentos...");
+            System.out.println("\nCreando Medicamentos...");
             String[][] medicamentosData = {
                     {"M001", "Ibuprofeno 400mg", "Tabletas"},
                     {"M002", "Paracetamol 500mg", "Tabletas"},
@@ -169,71 +165,76 @@ public class Main {
             }
 
             // ----------------------------
-            // 6. RECETAS (30 recetas - 25% en cada estado)
+            // 6. RECETAS DISTRIBUIDAS EN 12 MESES
             // ----------------------------
-            System.out.println("\n📋 Creando 30 Recetas (25% por estado)...");
+            System.out.println("\nCreando 60 Recetas distribuidas en 12 meses...");
 
             LocalDate hoy = LocalDate.now();
+            Random random = new Random();
 
-            // Array de estados para distribuir equitativamente
+            // Array de estados para distribución (25% cada uno)
             EstadoReceta[] estados = {
-                    EstadoReceta.confeccionada, EstadoReceta.confeccionada, EstadoReceta.confeccionada, EstadoReceta.confeccionada,
-                    EstadoReceta.confeccionada, EstadoReceta.confeccionada, EstadoReceta.confeccionada, // 7 confeccionadas
-                    EstadoReceta.proceso, EstadoReceta.proceso, EstadoReceta.proceso, EstadoReceta.proceso,
-                    EstadoReceta.proceso, EstadoReceta.proceso, EstadoReceta.proceso, EstadoReceta.proceso, // 8 en proceso
-                    EstadoReceta.lista, EstadoReceta.lista, EstadoReceta.lista, EstadoReceta.lista,
-                    EstadoReceta.lista, EstadoReceta.lista, EstadoReceta.lista, EstadoReceta.lista, // 8 listas
-                    EstadoReceta.entregada, EstadoReceta.entregada, EstadoReceta.entregada, EstadoReceta.entregada,
-                    EstadoReceta.entregada, EstadoReceta.entregada, EstadoReceta.entregada // 7 entregadas
+                    EstadoReceta.confeccionada,
+                    EstadoReceta.proceso,
+                    EstadoReceta.lista,
+                    EstadoReceta.entregada
             };
 
-            int contadorEstados[] = {0, 0, 0, 0}; // confeccionada, proceso, lista, entregada
+            int[] contadorEstados = {0, 0, 0, 0};
+            int totalRecetas = 60;
 
-            for (int i = 0; i < 30; i++) {
+            for (int i = 0; i < totalRecetas; i++) {
                 Receta receta = new Receta();
 
-                // Paciente aleatorio (IDs 14-23) - ciclamos entre los 10 pacientes
+                // Paciente aleatorio (IDs 14-23)
                 int idPaciente = 14 + (i % 10);
                 Paciente paciente = pacienteService.findById(idPaciente);
                 receta.setPaciente(paciente);
 
-                // Fecha de confección: distribuida en últimos 30 días
-                int diasAtras = i; // Una receta por día en los últimos 30 días
-                LocalDate fechaConfeccion = hoy.minusDays(diasAtras);
+                // DISTRIBUCIÓN TEMPORAL MEJORADA
+                // Distribuir recetas en los últimos 12 meses de manera uniforme
+                int mesAtras = random.nextInt(12); // 0-11 meses atrás
+                int diaDelMes = random.nextInt(28) + 1; // 1-28 (evita problemas con febrero)
+
+                LocalDate fechaConfeccion = hoy.minusMonths(mesAtras).withDayOfMonth(diaDelMes);
                 receta.setFechaConfeccion(fechaConfeccion);
                 receta.setFechaRetiro(fechaConfeccion.plusDays(7));
 
-                // Asignar estado según el array predefinido
-                EstadoReceta estado = estados[i];
+                // Asignar estado de manera uniforme
+                EstadoReceta estado = estados[i % 4];
                 receta.setEstado(estado);
+                contadorEstados[i % 4]++;
 
-                // Contar estados para reporte
-                switch (estado) {
-                    case confeccionada:
-                        contadorEstados[0]++;
-                        break;
-                    case proceso:
-                        contadorEstados[1]++;
-                        break;
-                    case lista:
-                        contadorEstados[2]++;
-                        break;
-                    case entregada:
-                        contadorEstados[3]++;
-                        break;
-                }
+                // AGREGAR MEDICAMENTOS CON VARIEDAD
+                // Cada receta tendrá entre 1 y 4 medicamentos
+                int cantidadMeds = random.nextInt(4) + 1;
 
-                // Agregar 1-3 medicamentos por receta
-                int cantidadMeds = 1 + (i % 3);
+                // Seleccionar medicamentos aleatorios sin repetir
+                Set<Integer> medicamentosUsados = new java.util.HashSet<>();
+
                 for (int j = 0; j < cantidadMeds; j++) {
-                    String codigoMed = String.format("M%03d", ((i + j) % 30) + 1);
+                    int indiceMed;
+                    do {
+                        indiceMed = random.nextInt(30); // 0-29
+                    } while (medicamentosUsados.contains(indiceMed));
+
+                    medicamentosUsados.add(indiceMed);
+                    String codigoMed = String.format("M%03d", indiceMed + 1);
+
                     Medicamento med = medicamentoService.findByCodigo(codigoMed);
 
                     if (med != null) {
+                        // Cantidad variable: 1-5 unidades
+                        int cantidad = random.nextInt(5) + 1;
+
+                        // Duración variable: 7, 14, 21 o 30 días
+                        int[] duraciones = {7, 14, 21, 30};
+                        int duracion = duraciones[random.nextInt(duraciones.length)];
+
                         MedicamentoPrescrito mp = new MedicamentoPrescrito(
                                 codigoMed,
-                                1 + (j % 3),
-                                7 + (j * 7),
+                                cantidad,
+                                duracion,
                                 generarIndicaciones(med.getNombre())
                         );
                         receta.addMedicamento(mp);
@@ -241,40 +242,16 @@ public class Main {
                 }
 
                 if (recetaService.createReceta(receta)) {
-                    System.out.println("  ✓ Receta #" + (i+1) + " - Paciente" + (idPaciente-13) +
-                            " - " + cantidadMeds + " meds - Estado: " + estado);
+                    System.out.println("  ✓ Receta #" + (i+1) +
+                            " | " + fechaConfeccion +
+                            " | Paciente" + (idPaciente-13) +
+                            " | " + cantidadMeds + " meds" +
+                            " | Estado: " + estado);
                 }
             }
 
-            System.out.println("\n╔═══════════════════════════════════════════╗");
-            System.out.println("║      ✅ DATOS INICIALES CREADOS           ║");
-            System.out.println("╚═══════════════════════════════════════════╝");
-            System.out.println("\n📊 RESUMEN:");
-            System.out.println("  • 3 Administradores");
-            System.out.println("  • 4 Farmacéutas");
-            System.out.println("  • 6 Médicos");
-            System.out.println("  • 10 Pacientes");
-            System.out.println("  • 30 Medicamentos");
-            System.out.println("  • 30 Recetas:");
-            System.out.println("    - " + contadorEstados[0] + " Confeccionadas (" +
-                    String.format("%.1f%%", (contadorEstados[0] * 100.0 / 30)) + ")");
-            System.out.println("    - " + contadorEstados[1] + " En Proceso (" +
-                    String.format("%.1f%%", (contadorEstados[1] * 100.0 / 30)) + ")");
-            System.out.println("    - " + contadorEstados[2] + " Listas (" +
-                    String.format("%.1f%%", (contadorEstados[2] * 100.0 / 30)) + ")");
-            System.out.println("    - " + contadorEstados[3] + " Entregadas (" +
-                    String.format("%.1f%%", (contadorEstados[3] * 100.0 / 30)) + ")");
-
-            System.out.println("\n📝 CREDENCIALES:");
-            System.out.println("  Admin1 / admin1");
-            System.out.println("  Medico1 / med1");
-            System.out.println("  Farmaceuta1 / farm1");
-            System.out.println("  Paciente1 / pac1");
-
-            System.out.println("\n⚠️  Cambia 'crearDatosIniciales' a false\n");
         }
 
-        // Iniciar servidores
         int requestPort = 7070;
         SocketServer requestServer = new SocketServer(
                 requestPort, authController, usuarioController, pacienteController,
@@ -287,7 +264,7 @@ public class Main {
         requestServer.setMessageBroadcaster(broadcaster);
 
         Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-            System.out.println("\n🛑 Apagando servidores...");
+            System.out.println("\nApagando servidores...");
             requestServer.stop();
             broadcaster.stop();
         }));
@@ -295,12 +272,12 @@ public class Main {
         requestServer.start();
         broadcaster.start();
 
-        System.out.println("\n╔═══════════════════════════════════════════╗");
-        System.out.println("║       🚀 SERVIDORES INICIADOS             ║");
-        System.out.println("╚═══════════════════════════════════════════╝");
-        System.out.println("  📡 Requests:   localhost:" + requestPort);
-        System.out.println("  📢 Broadcast:  localhost:" + messagePort);
-        System.out.println("═══════════════════════════════════════════════\n");
+        System.out.println("-----------------------------------");
+        System.out.println("    SERVIDORES INICIADOS ");
+        System.out.println("-----------------------------------");
+        System.out.println("  Requests:   localhost:" + requestPort);
+        System.out.println("  Broadcast:  localhost:" + messagePort);
+        System.out.println("-----------------------------------\n");
     }
 
     private static Date parseFecha(String fechaStr) {

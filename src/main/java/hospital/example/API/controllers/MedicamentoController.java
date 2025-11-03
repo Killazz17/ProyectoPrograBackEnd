@@ -62,6 +62,6 @@ public class MedicamentoController {
     private ResponseDto handleDelete(RequestDto request) {
         String codigo = request.getData();
         boolean success = medicamentoService.delete(codigo);
-        return new ResponseDto(success, success ? "Medicamento eliminado" : "No se encontró el medicamento", null);
+        return new ResponseDto(success, success ? "Medicamento eliminado" : "No se encontro el medicamento", null);
     }
 }

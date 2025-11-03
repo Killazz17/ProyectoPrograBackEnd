@@ -43,27 +43,22 @@ public class MedicamentoPrescritoController {
         try {
             System.out.println("[MedicamentoPrescritoController] Obteniendo medicamentos prescritos...");
 
-            // Obtener todas las recetas con medicamentos
             List<Receta> recetas = recetaService.findAllWithMedicamentos();
 
             if (recetas == null || recetas.isEmpty()) {
-                System.out.println("[MedicamentoPrescritoController] No hay recetas");
                 return new ResponseDto(true, "No hay medicamentos prescritos",
                         gson.toJson(new ArrayList<>()));
             }
 
             List<MedicamentoPrescritoDetalladoDto> resultado = new ArrayList<>();
 
-            // Procesar cada receta
             for (Receta receta : recetas) {
                 if (receta.getMedicamentos() == null) continue;
 
                 String fechaConfeccion = receta.getFechaConfeccion().toString();
                 String estado = receta.getEstado().toString();
 
-                // Procesar cada medicamento prescrito
                 for (MedicamentoPrescrito mp : receta.getMedicamentos()) {
-                    // Buscar información del medicamento base
                     Medicamento med = medicamentoService.findByCodigo(mp.getMedicamentoCodigo());
 
                     String nombre = "Desconocido";
@@ -74,7 +69,6 @@ public class MedicamentoPrescritoController {
                         presentacion = med.getPresentacion();
                     }
 
-                    // Crear DTO detallado
                     MedicamentoPrescritoDetalladoDto dto = new MedicamentoPrescritoDetalladoDto(
                             mp.getId(),
                             mp.getMedicamentoCodigo(),
@@ -91,9 +85,6 @@ public class MedicamentoPrescritoController {
                 }
             }
 
-            System.out.println("[MedicamentoPrescritoController] Total medicamentos prescritos: "
-                    + resultado.size());
-
             return new ResponseDto(true, "Medicamentos prescritos obtenidos correctamente",
                     gson.toJson(resultado));
 
@@ -105,9 +96,6 @@ public class MedicamentoPrescritoController {
         }
     }
 
-    /**
-     * DTO interno para serialización
-     */
     private static class MedicamentoPrescritoDetalladoDto {
         private int id;
         private String medicamentoCodigo;

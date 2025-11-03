@@ -50,7 +50,6 @@ public class PacienteController {
     private ResponseDto handleCreate(RequestDto request) {
         try {
             PacienteCreateDto dto = gson.fromJson(request.getData(), PacienteCreateDto.class);
-            // Constructor Paciente: (id, claveHash, nombre, fechaNacimiento, numeroTelefono)
             Paciente paciente = new Paciente(
                     dto.getId(),
                     "",
@@ -71,6 +70,6 @@ public class PacienteController {
     private ResponseDto handleDelete(RequestDto request) {
         int id = Integer.parseInt(request.getData());
         boolean success = pacienteService.delete(id);
-        return new ResponseDto(success, success ? "Paciente eliminado" : "No se encontró el paciente", null);
+        return new ResponseDto(success, success ? "Paciente eliminado" : "No se encontro el paciente", null);
     }
 }

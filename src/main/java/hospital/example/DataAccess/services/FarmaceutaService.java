@@ -15,9 +15,6 @@ public class FarmaceutaService {
         this.sessionFactory = sessionFactory;
     }
 
-    // -----------------------------
-    // Obtener todos los farmaceutas
-    // -----------------------------
     public List<Farmaceuta> findAll() {
         try (Session session = sessionFactory.openSession()) {
             return session.createQuery("FROM Farmaceuta", Farmaceuta.class).list();
@@ -27,9 +24,6 @@ public class FarmaceutaService {
         }
     }
 
-    // -----------------------------
-    // Buscar por ID
-    // -----------------------------
     public Farmaceuta findById(int id) {
         try (Session session = sessionFactory.openSession()) {
             return session.find(Farmaceuta.class, id);
@@ -39,9 +33,6 @@ public class FarmaceutaService {
         }
     }
 
-    // -----------------------------
-    // Guardar un farmaceuta
-    // -----------------------------
     public boolean save(Farmaceuta farmaceuta) {
         Transaction tx = null;
         try (Session session = sessionFactory.openSession()) {
@@ -56,9 +47,6 @@ public class FarmaceutaService {
         }
     }
 
-    // -----------------------------
-    // Eliminar por ID
-    // -----------------------------
     public boolean delete(int id) {
         Transaction tx = null;
         try (Session session = sessionFactory.openSession()) {

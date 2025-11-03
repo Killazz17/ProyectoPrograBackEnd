@@ -16,8 +16,6 @@ public class RecetaService {
         this.sessionFactory = sessionFactory;
     }
 
-    // ========== MÉTODOS EXISTENTES ==========
-
     public boolean createReceta(Receta receta) {
         Transaction tx = null;
         try (Session session = sessionFactory.openSession()) {
@@ -63,7 +61,7 @@ public class RecetaService {
                     Receta.class
             ).getResultList();
 
-            System.out.println("[RecetaService] ✓ Cargadas " + recetas.size() + " recetas con medicamentos");
+            System.out.println("[RecetaService] Cargadas " + recetas.size() + " recetas con medicamentos");
 
             for (Receta r : recetas) {
                 System.out.println("[RecetaService]   Receta #" + r.getId() + " tiene " +
@@ -73,7 +71,7 @@ public class RecetaService {
             return recetas;
 
         } catch (Exception e) {
-            System.err.println("[RecetaService] ❌ Error al obtener recetas con medicamentos: " + e.getMessage());
+            System.err.println("[RecetaService] Error al obtener recetas con medicamentos: " + e.getMessage());
             e.printStackTrace();
             return List.of();
         } finally {
@@ -83,11 +81,6 @@ public class RecetaService {
         }
     }
 
-    // ========== NUEVOS MÉTODOS PARA DESPACHO ==========
-
-    /**
-     * Buscar una receta por ID con sus medicamentos cargados
-     */
     public Receta findByIdWithMedicamentos(int id) {
         Session session = null;
         try {
@@ -103,10 +96,10 @@ public class RecetaService {
                     .uniqueResult();
 
             if (receta != null) {
-                System.out.println("[RecetaService] ✓ Receta #" + id + " encontrada con " +
+                System.out.println("[RecetaService] Receta #" + id + " encontrada con " +
                         receta.getMedicamentos().size() + " medicamentos");
             } else {
-                System.out.println("[RecetaService] ⚠️ Receta #" + id + " no encontrada");
+                System.out.println("[RecetaService] Receta #" + id + " no encontrada");
             }
 
             return receta;
@@ -122,9 +115,6 @@ public class RecetaService {
         }
     }
 
-    /**
-     * Actualizar el estado de una receta
-     */
     public boolean updateEstado(int idReceta, EstadoReceta nuevoEstado) {
         Transaction tx = null;
         Session session = null;
@@ -144,9 +134,6 @@ public class RecetaService {
             session.merge(receta);
 
             tx.commit();
-
-            System.out.println("[RecetaService] ✓ Receta #" + idReceta + " actualizada: " +
-                    estadoAnterior + " → " + nuevoEstado);
 
             return true;
 
@@ -168,9 +155,6 @@ public class RecetaService {
         }
     }
 
-    /**
-     * Obtener recetas por paciente
-     */
     public List<Receta> findByPaciente(int pacienteId) {
         Session session = null;
         try {
@@ -185,9 +169,6 @@ public class RecetaService {
                     ).setParameter("pacienteId", pacienteId)
                     .getResultList();
 
-            System.out.println("[RecetaService] ✓ Encontradas " + recetas.size() +
-                    " recetas para paciente #" + pacienteId);
-
             return recetas;
 
         } catch (Exception e) {
@@ -201,9 +182,6 @@ public class RecetaService {
         }
     }
 
-    /**
-     * Obtener recetas por estado
-     */
     public List<Receta> findByEstado(EstadoReceta estado) {
         Session session = null;
         try {
@@ -217,9 +195,6 @@ public class RecetaService {
                             Receta.class
                     ).setParameter("estado", estado)
                     .getResultList();
-
-            System.out.println("[RecetaService] ✓ Encontradas " + recetas.size() +
-                    " recetas con estado " + estado);
 
             return recetas;
 

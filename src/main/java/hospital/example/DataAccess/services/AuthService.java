@@ -19,16 +19,11 @@ public class AuthService {
         this.sessionFactory = sessionFactory;
     }
 
-    /**
-     * Método para hacer login por NOMBRE (username)
-     * Busca el usuario por nombre y verifica la clave hasheada
-     */
     public Usuario loginByNombre(String nombre, String clave) {
         Session session = null;
         try {
             session = sessionFactory.openSession();
 
-            // Buscar usuario por nombre
             Usuario u = session.createQuery(
                             "FROM Usuario WHERE nombre = :nombre", Usuario.class)
                     .setParameter("nombre", nombre)
@@ -47,8 +42,6 @@ public class AuthService {
             String claveHasheada = hash(clave, u.getSalt());
             boolean claveCorrecta = claveHasheada.equals(u.getClaveHash());
 
-            System.out.println("[AuthService] Login attempt for nombre '" + nombre + "': " + (claveCorrecta ? "SUCCESS" : "FAILED"));
-
             return claveCorrecta ? u : null;
 
         } catch (Exception e) {
@@ -62,10 +55,6 @@ public class AuthService {
         }
     }
 
-    /**
-     * Método para hacer login por ID (mantiene compatibilidad)
-     * Busca el usuario por ID y verifica la clave hasheada
-     */
     public Usuario login(int id, String clave) {
         Session session = null;
         try {
@@ -187,8 +176,6 @@ public class AuthService {
             u.setSalt(salt);
             u.setClaveHash(claveHash);
 
-            System.out.println("[AuthService] Clave asignada correctamente a usuario ID: " + u.getId());
-
         } catch (Exception e) {
             if (tx != null && tx.isActive()) {
                 try {
@@ -206,18 +193,12 @@ public class AuthService {
         }
     }
 
-    /**
-     * Genera un salt aleatorio
-     */
     private String genSalt() {
         byte[] salt = new byte[SALT_LENGTH];
         new SecureRandom().nextBytes(salt);
         return Base64.getEncoder().encodeToString(salt);
     }
 
-    /**
-     * Hashea una contraseña con un salt usando PBKDF2
-     */
     private String hash(String pass, String salt) {
         try {
             var spec = new PBEKeySpec(
