@@ -25,6 +25,8 @@ public class AuthController {
                     return handleLogin(request);
                 case "loginByNombre":
                     return handleLoginByNombre(request);
+                case "changePassword":
+                    return handleChangePassword(request);
                 default:
                     return new ResponseDto(false, "Comando no reconocido en AuthController: " + request.getRequest(), null);
             }
@@ -77,6 +79,42 @@ public class AuthController {
         } catch (Exception e) {
             e.printStackTrace();
             return new ResponseDto(false, "Error en loginByNombre: " + e.getMessage(), null);
+        }
+    }
+
+    // Cambiar contraseña
+    private ResponseDto handleChangePassword(RequestDto request) {
+        try {
+            System.out.println("[AuthController] Procesando changePassword");
+
+            com.google.gson.JsonObject jsonObj = gson.fromJson(request.getData(), com.google.gson.JsonObject.class);
+            String nombreUsuario = jsonObj.get("nombreUsuario").getAsString();
+            String claveActual = jsonObj.get("claveActual").getAsString();
+            String claveNueva = jsonObj.get("claveNueva").getAsString();
+
+            System.out.println("[AuthController] Cambio de contraseña para: " + nombreUsuario);
+
+            // Verificar credenciales actuales
+            Usuario usuario = authService.loginByNombre(nombreUsuario, claveActual);
+
+            if (usuario == null) {
+                System.out.println("[AuthController] Contraseña actual incorrecta");
+                return new ResponseDto(false, "Contraseña actual incorrecta", null);
+            }
+
+            // Cambiar la contraseña
+            boolean success = authService.cambiarClave(usuario.getId(), claveNueva);
+
+            if (success) {
+                System.out.println("[AuthController] Contraseña cambiada exitosamente");
+                return new ResponseDto(true, "Contraseña cambiada exitosamente", null);
+            } else {
+                return new ResponseDto(false, "Error al cambiar la contraseña", null);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return new ResponseDto(false, "Error en changePassword: " + e.getMessage(), null);
         }
     }
 }

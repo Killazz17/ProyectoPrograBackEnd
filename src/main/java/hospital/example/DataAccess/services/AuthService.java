@@ -101,6 +101,58 @@ public class AuthService {
     }
 
     /**
+     * Cambiar la contraseña de un usuario
+     */
+    public boolean cambiarClave(int userId, String nuevaClave) {
+        if (nuevaClave == null || nuevaClave.isEmpty()) {
+            System.err.println("[AuthService] Nueva clave nula o vacía");
+            return false;
+        }
+
+        String salt = genSalt();
+        String claveHash = hash(nuevaClave, salt);
+
+        Session session = null;
+        Transaction tx = null;
+        try {
+            session = sessionFactory.openSession();
+            tx = session.beginTransaction();
+
+            Usuario usuario = session.find(Usuario.class, userId);
+
+            if (usuario == null) {
+                System.err.println("[AuthService] No se encontró usuario con ID: " + userId);
+                return false;
+            }
+
+            usuario.setSalt(salt);
+            usuario.setClaveHash(claveHash);
+            session.merge(usuario);
+
+            tx.commit();
+
+            System.out.println("[AuthService] Contraseña cambiada correctamente para usuario ID: " + userId);
+            return true;
+
+        } catch (Exception e) {
+            if (tx != null && tx.isActive()) {
+                try {
+                    tx.rollback();
+                } catch (Exception ex) {
+                    System.err.println("[AuthService] Error en rollback: " + ex.getMessage());
+                }
+            }
+            System.err.println("[AuthService] Error al cambiar clave: " + e.getMessage());
+            e.printStackTrace();
+            return false;
+        } finally {
+            if (session != null && session.isOpen()) {
+                session.close();
+            }
+        }
+    }
+
+    /**
      * Asigna una clave hasheada a un usuario
      * Este método debe llamarse DESPUÉS de guardar el usuario en la BD
      */
