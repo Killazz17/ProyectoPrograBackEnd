@@ -3,9 +3,6 @@ package hospital.example.Domain.models;
 import jakarta.persistence.*;
 
 @Entity
-@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
-@DiscriminatorColumn(name = "tipo", discriminatorType = DiscriminatorType.STRING)
-@DiscriminatorValue("MEDICAMENTO")
 @Table(name = "medicamentos")
 public class Medicamento {
 
@@ -27,28 +24,12 @@ public class Medicamento {
         this.presentacion = presentacion;
     }
 
-    // Getters y Setters
-    public String getCodigo() {
-        return codigo;
-    }
+    public String getCodigo() { return codigo; }
+    public void setCodigo(String codigo) { this.codigo = codigo; }
 
-    public void setCodigo(String codigo) {
-        this.codigo = codigo;
-    }
+    public String getNombre() { return nombre; }
+    public void setNombre(String nombre) { this.nombre = nombre; }
 
-    public String getNombre() {
-        return nombre;
-    }
-
-    public void setNombre(String nombre) {
-        this.nombre = nombre;
-    }
-
-    public String getPresentacion() {
-        return presentacion;
-    }
-
-    public void setPresentacion(String presentacion) {
-        this.presentacion = presentacion;
-    }
+    public String getPresentacion() { return presentacion; }
+    public void setPresentacion(String presentacion) { this.presentacion = presentacion; }
 }

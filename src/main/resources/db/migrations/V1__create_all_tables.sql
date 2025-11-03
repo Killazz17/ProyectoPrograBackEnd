@@ -1,4 +1,3 @@
--- Tabla base para todos los usuarios
 CREATE TABLE usuario (
                          id INT NOT NULL PRIMARY KEY,
                          clave_hash VARCHAR(255),
@@ -7,7 +6,6 @@ CREATE TABLE usuario (
                          rol VARCHAR(20) NOT NULL
 );
 
--- Admins
 CREATE TABLE admin (
                        id INT NOT NULL,
                        created_at DATETIME,
@@ -16,7 +14,6 @@ CREATE TABLE admin (
                        CONSTRAINT fk_admin_usuario FOREIGN KEY (id) REFERENCES usuario(id) ON DELETE CASCADE
 );
 
--- Farmaceutas
 CREATE TABLE farmaceuta (
                             id INT NOT NULL,
                             created_at DATETIME,
@@ -25,7 +22,6 @@ CREATE TABLE farmaceuta (
                             CONSTRAINT fk_farmaceuta_usuario FOREIGN KEY (id) REFERENCES usuario(id) ON DELETE CASCADE
 );
 
--- Médicos
 CREATE TABLE medico (
                         id INT NOT NULL,
                         especialidad VARCHAR(100),
@@ -35,7 +31,6 @@ CREATE TABLE medico (
                         CONSTRAINT fk_medico_usuario FOREIGN KEY (id) REFERENCES usuario(id) ON DELETE CASCADE
 );
 
--- Pacientes
 CREATE TABLE paciente (
                           id INT NOT NULL,
                           fecha_nacimiento DATE,
@@ -46,7 +41,6 @@ CREATE TABLE paciente (
                           CONSTRAINT fk_paciente_usuario FOREIGN KEY (id) REFERENCES usuario(id) ON DELETE CASCADE
 );
 
--- Recetas (nombre corregido a "recetas")
 CREATE TABLE recetas (
                          id INT AUTO_INCREMENT NOT NULL,
                          paciente_id INT NOT NULL,
@@ -57,22 +51,26 @@ CREATE TABLE recetas (
                          CONSTRAINT fk_receta_paciente FOREIGN KEY (paciente_id) REFERENCES paciente(id)
 );
 
--- Medicamentos (nombre corregido a "medicamentos")
 CREATE TABLE medicamentos (
                               codigo VARCHAR(20) NOT NULL,
-                              tipo VARCHAR(50) NOT NULL,
                               nombre VARCHAR(100) NOT NULL,
                               presentacion VARCHAR(100) NOT NULL,
-    -- Campos solo para MedicamentoPrescrito
-                              cantidad INT,
-                              duracion INT,
-                              indicaciones VARCHAR(300),
-                              receta_id INT,
-                              CONSTRAINT pk_medicamentos PRIMARY KEY (codigo),
-                              CONSTRAINT fk_medicamento_receta FOREIGN KEY (receta_id) REFERENCES recetas(id)
+                              CONSTRAINT pk_medicamentos PRIMARY KEY (codigo)
 );
 
--- Índices para mejorar performance
-CREATE INDEX idx_medicamentos_receta ON medicamentos(receta_id);
+CREATE TABLE medicamentos_prescritos (
+                                         id INT AUTO_INCREMENT NOT NULL,
+                                         receta_id INT NOT NULL,
+                                         medicamento_codigo VARCHAR(20) NOT NULL,
+                                         cantidad INT NOT NULL,
+                                         duracion INT NOT NULL,
+                                         indicaciones VARCHAR(300),
+                                         CONSTRAINT pk_medicamentos_prescritos PRIMARY KEY (id),
+                                         CONSTRAINT fk_prescrito_receta FOREIGN KEY (receta_id) REFERENCES recetas(id) ON DELETE CASCADE,
+                                         CONSTRAINT fk_prescrito_medicamento FOREIGN KEY (medicamento_codigo) REFERENCES medicamentos(codigo)
+);
+
+CREATE INDEX idx_prescritos_receta ON medicamentos_prescritos(receta_id);
+CREATE INDEX idx_prescritos_medicamento ON medicamentos_prescritos(medicamento_codigo);
 CREATE INDEX idx_recetas_paciente ON recetas(paciente_id);
 CREATE INDEX idx_recetas_estado ON recetas(estado);

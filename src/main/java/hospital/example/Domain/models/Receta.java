@@ -4,6 +4,7 @@ import hospital.example.Utilities.EstadoReceta;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -28,57 +29,44 @@ public class Receta {
     @JoinColumn(name = "paciente_id")
     private Paciente paciente;
 
-    @OneToMany(cascade = CascadeType.ALL)
-    @JoinColumn(name = "receta_id") // FK en MedicamentoPrescrito
-    private List<MedicamentoPrescrito> medicamentos;
+    //  CAMBIO CRÍTICO: mappedBy en lugar de @JoinColumn
+    @OneToMany(mappedBy = "receta", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MedicamentoPrescrito> medicamentos = new ArrayList<>();
 
     public Receta() {}
 
-    public int getId() {
-        return id;
+    //  MÉTODO HELPER para mantener sincronización bidireccional
+    public void addMedicamento(MedicamentoPrescrito medicamento) {
+        medicamentos.add(medicamento);
+        medicamento.setReceta(this);
     }
 
-    public void setId(int id) {
-        this.id = id;
-    }
+    // Getters y Setters
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
 
-    public LocalDate getFechaConfeccion() {
-        return fechaConfeccion;
-    }
-
+    public LocalDate getFechaConfeccion() { return fechaConfeccion; }
     public void setFechaConfeccion(LocalDate fechaConfeccion) {
         this.fechaConfeccion = fechaConfeccion;
     }
 
-    public LocalDate getFechaRetiro() {
-        return fechaRetiro;
-    }
-
+    public LocalDate getFechaRetiro() { return fechaRetiro; }
     public void setFechaRetiro(LocalDate fechaRetiro) {
         this.fechaRetiro = fechaRetiro;
     }
 
-    public EstadoReceta getEstado() {
-        return estado;
-    }
+    public EstadoReceta getEstado() { return estado; }
+    public void setEstado(EstadoReceta estado) { this.estado = estado; }
 
-    public void setEstado(EstadoReceta estado) {
-        this.estado = estado;
-    }
+    public Paciente getPaciente() { return paciente; }
+    public void setPaciente(Paciente paciente) { this.paciente = paciente; }
 
-    public Paciente getPaciente() {
-        return paciente;
-    }
-
-    public void setPaciente(Paciente paciente) {
-        this.paciente = paciente;
-    }
-
-    public List<MedicamentoPrescrito> getMedicamentos() {
-        return medicamentos;
-    }
+    public List<MedicamentoPrescrito> getMedicamentos() { return medicamentos; }
 
     public void setMedicamentos(List<MedicamentoPrescrito> medicamentos) {
-        this.medicamentos = medicamentos;
+        this.medicamentos.clear();
+        if (medicamentos != null) {
+            medicamentos.forEach(this::addMedicamento);
+        }
     }
 }
