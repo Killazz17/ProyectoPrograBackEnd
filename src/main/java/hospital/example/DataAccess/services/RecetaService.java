@@ -68,6 +68,13 @@ public class RecetaService {
                         r.getMedicamentos().size() + " medicamentos");
             }
 
+            System.out.println("=== [RecetaService] RECETAS CARGADAS ===");
+            for (Receta r : recetas) {
+                System.out.println("  Receta ID: " + r.getId() +
+                        " | Paciente: " + (r.getPaciente() != null ?
+                        "ID=" + r.getPaciente().getId() + ", Nombre=" + r.getPaciente().getNombre() :
+                        "NULL"));
+            }
             return recetas;
 
         } catch (Exception e) {
@@ -206,6 +213,27 @@ public class RecetaService {
             if (session != null && session.isOpen()) {
                 session.close();
             }
+        }
+    }
+
+    public List<Receta> findByPacienteId(int pacienteId) {
+        try (Session session = sessionFactory.openSession()) {
+            List<Receta> recetas = session.createQuery(
+                            "SELECT DISTINCT r FROM Receta r " +
+                                    "LEFT JOIN FETCH r.medicamentos " +
+                                    "WHERE r.paciente.id = :pacienteId",
+                            Receta.class
+                    ).setParameter("pacienteId", pacienteId)
+                    .getResultList();
+
+            System.out.println("[RecetaService] Búsqueda por paciente ID " + pacienteId +
+                    " → " + recetas.size() + " recetas encontradas");
+
+            return recetas;
+        } catch (Exception e) {
+            System.err.println("[RecetaService] Error en findByPacienteId: " + e.getMessage());
+            e.printStackTrace();
+            return List.of();
         }
     }
 }

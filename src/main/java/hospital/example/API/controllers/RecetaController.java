@@ -50,6 +50,8 @@ public class RecetaController {
                     return handleUpdateEstado(request);
                 case "getRecetaById":
                     return handleGetById(request);
+                case "buscarRecetas":
+                    return handleBuscarRecetas(request);
                 default:
                     return new ResponseDto(false, "Comando no reconocido en RecetaController", null);
             }
@@ -249,7 +251,7 @@ public class RecetaController {
                 return new ResponseDto(false, "Receta no encontrada", null);
             }
 
-            DespachoDto dto = convertirADespachoDto(receta);
+            RecetaDetalladaResponseDto dto = convertirADto(receta);
 
             return new ResponseDto(true, "Receta encontrada", gson.toJson(dto));
 
@@ -342,5 +344,143 @@ public class RecetaController {
             this.estado = estado;
             this.cantidadMedicamentos = cantidadMedicamentos;
         }
+    }
+
+// ========== MÉTODO DE BÚSQUEDA DE HISTORICO ==========
+
+    private ResponseDto handleBuscarRecetas(RequestDto request) {
+        try {
+            // El filtro viene como JSON: {"tipo": "id" o "nombre", "valor": "texto"}
+            com.google.gson.JsonObject filtro = gson.fromJson(request.getData(), com.google.gson.JsonObject.class);
+            String tipo = filtro.has("tipo") ? filtro.get("tipo").getAsString().toLowerCase() : "all";
+            String valor = filtro.has("valor") ? filtro.get("valor").getAsString().trim() : "";
+
+            System.out.println("[RecetaController] 🔍 Buscando recetas - Tipo: '" + tipo + "', Valor: '" + valor + "'");
+
+            List<Receta> todasRecetas = recetaService.findAllWithMedicamentos();
+
+            if (todasRecetas == null || todasRecetas.isEmpty()) {
+                return new ResponseDto(true, "No hay recetas", gson.toJson(new ArrayList<>()));
+            }
+
+            List<Receta> recetasFiltradas = new ArrayList<>();
+
+            // Si el valor está vacío, devolver todas
+            if (valor.isEmpty()) {
+                recetasFiltradas = todasRecetas;
+            } else {
+                System.out.println("=== [RecetaController] BÚSQUEDA RECIBIDA ===");
+                System.out.println("  tipo: '" + tipo + "'");
+                System.out.println("  valor: '" + valor + "'");
+                System.out.println("  valor.trim(): '" + valor.trim() + "'");
+                System.out.println("  valor.isEmpty(): " + valor.isEmpty());
+                // Filtrar según el tipo
+                switch (tipo) {
+                    case "id":
+                        String valorIdStr = valor.trim();
+                        if (valorIdStr.isEmpty()) {
+                            recetasFiltradas = todasRecetas;
+                            break;
+                        }
+
+                        try {
+                            int idBuscado = Integer.parseInt(valorIdStr);
+                            System.out.println("[RecetaController] Buscando recetas del paciente con ID: " + idBuscado);
+
+                            // Usa el nuevo método del servicio
+                            recetasFiltradas = recetaService.findByPacienteId(idBuscado);
+
+                            System.out.println("[RecetaController] Resultado: " + recetasFiltradas.size() + " recetas");
+
+                        } catch (NumberFormatException e) {
+                            System.err.println("[RecetaController] ID no es número: '" + valorIdStr + "'");
+                            recetasFiltradas = List.of();
+                        }
+                        break;
+                    case "nombre":
+                        // Buscar por nombre de paciente (parcial, insensible a mayúsculas)
+                        String valorLower = valor.toLowerCase();
+                        recetasFiltradas = todasRecetas.stream()
+                                .filter(r -> {
+                                    boolean coincide = r.getPaciente().getNombre().toLowerCase().contains(valorLower);
+                                    System.out.println("[RecetaController]   Receta #" + r.getId() +
+                                            " - Paciente: " + r.getPaciente().getNombre() +
+                                            " - ¿Coincide con '" + valor + "'? " + coincide);
+                                    return coincide;
+                                })
+                                .collect(Collectors.toList());
+                        break;
+                    case "id_receta":
+                        try {
+                            int idBuscado = Integer.parseInt(valor);
+                            recetasFiltradas = todasRecetas.stream()
+                                    .filter(r -> r.getId() == idBuscado)
+                                    .collect(Collectors.toList());
+                            System.out.println("[RecetaController] Búsqueda por ID receta " + idBuscado +
+                                    " → " + recetasFiltradas.size() + " encontradas");
+                        } catch (NumberFormatException e) {
+                            System.err.println("[RecetaController] ID receta no es número: '" + valor + "'");
+                            recetasFiltradas = List.of();
+                        }
+                        break;
+                    case "all":
+                    default:
+                        // Sin filtro, devolver todas
+                        recetasFiltradas = todasRecetas;
+                        break;
+                }
+            }
+
+            System.out.println("[RecetaController] ✅ Encontradas " + recetasFiltradas.size() + " recetas de " + todasRecetas.size() + " totales");
+
+            // Convertir a DTOs simples para histórico
+            List<HistoricoRecetaDto> dtos = recetasFiltradas.stream()
+                    .map(this::convertirAHistoricoDto)
+                    .collect(Collectors.toList());
+
+            return new ResponseDto(true, "Recetas encontradas", gson.toJson(dtos));
+
+        } catch (Exception e) {
+            System.err.println("[RecetaController] ❌ Error en búsqueda: " + e.getMessage());
+            e.printStackTrace();
+            return new ResponseDto(false, "Error: " + e.getMessage(), gson.toJson(new ArrayList<>()));
+        }
+    }
+
+// ========== DTO SIMPLE PARA HISTÓRICO (coincide con tu frontend) ==========
+
+    private HistoricoRecetaDto convertirAHistoricoDto(Receta receta) {
+        return new HistoricoRecetaDto(
+                receta.getId(),
+                receta.getPaciente().getNombre(),
+                "Sin asignar", // Como no tienes médico en las recetas
+                receta.getFechaConfeccion().toString(),
+                receta.getEstado().toString()
+        );
+    }
+
+    // DTO interno para histórico - coincide con tu estructura del frontend
+    private static class HistoricoRecetaDto {
+        private int id;
+        private String paciente;
+        private String medico;
+        private String fecha;
+        private String estado;
+
+        public HistoricoRecetaDto(int id, String paciente, String medico,
+                                        String fecha, String estado) {
+            this.id = id;
+            this.paciente = paciente;
+            this.medico = medico;
+            this.fecha = fecha;
+            this.estado = estado;
+        }
+
+        // Getters
+        public int getId() { return id; }
+        public String getPaciente() { return paciente; }
+        public String getMedico() { return medico; }
+        public String getFecha() { return fecha; }
+        public String getEstado() { return estado; }
     }
 }
