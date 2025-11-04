@@ -36,7 +36,8 @@ public class PacienteService {
             return true;
         } catch (Exception e) {
             if (tx != null) tx.rollback();
-            System.err.println("[PacienteService] Error al guardar admin: " + e.getMessage());
+            System.err.println("[PacienteService] Error al guardar paciente: " + e.getMessage());
+            e.printStackTrace();
             return false;
         } finally {
             if (session != null) session.close();
@@ -53,20 +54,57 @@ public class PacienteService {
     }
 
     public boolean delete(int id) {
+        Session session = null;
         Transaction tx = null;
-        try (Session session = sessionFactory.openSession()) {
+        try {
+            session = sessionFactory.openSession();
             tx = session.beginTransaction();
-            Paciente entity = session.find(Paciente.class, id);
-            if (entity != null) {
-                session.remove(entity);
-                tx.commit();
-                return true;
+
+            // Buscar el paciente
+            Paciente paciente = session.find(Paciente.class, id);
+
+            if (paciente == null) {
+                System.err.println("[PacienteService] Paciente no encontrado con ID: " + id);
+                return false;
             }
+
+            System.out.println("[PacienteService] Eliminando paciente: " + paciente.getNombre());
+
+            session.remove(paciente);
+
+            tx.commit();
+            System.out.println("[PacienteService] Paciente eliminado exitosamente");
+            return true;
+
+        } catch (org.hibernate.exception.ConstraintViolationException e) {
+            if (tx != null && tx.isActive()) {
+                try {
+                    tx.rollback();
+                } catch (Exception ex) {
+                    System.err.println("[PacienteService] Error en rollback: " + ex.getMessage());
+                }
+            }
+            System.err.println("[PacienteService] No se puede eliminar el paciente porque tiene recetas asociadas");
+            System.err.println("[PacienteService] Solución: Ejecuta el script SQL 'fix_foreign_keys.sql' en tu base de datos");
+            e.printStackTrace();
             return false;
+
         } catch (Exception e) {
-            if (tx != null) tx.rollback();
+            if (tx != null && tx.isActive()) {
+                try {
+                    tx.rollback();
+                } catch (Exception ex) {
+                    System.err.println("[PacienteService] Error en rollback: " + ex.getMessage());
+                }
+            }
             System.err.println("[PacienteService] Error al eliminar paciente: " + e.getMessage());
+            e.printStackTrace();
             return false;
+
+        } finally {
+            if (session != null && session.isOpen()) {
+                session.close();
+            }
         }
     }
 }
